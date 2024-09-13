@@ -7,13 +7,16 @@
 #include <memory>
 #include <string>
 
+constexpr int INPUT_PIXEL_SIZE = 32;
+constexpr int OUTPUT_PIXEL_SIZE = 23;
+
 class NN_Model {
     std::string model_filename;
     torch::jit::script::Module nn_model_obj;
 
     public:
         NN_Model(std::string filename);
-        float* run_model(float data[1][1][32][32]);
+        float* run_model(float data[1][1][INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]);
 };
 
 #endif

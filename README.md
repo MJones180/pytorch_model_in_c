@@ -21,5 +21,7 @@ The executable can be run by using the following two commands:
     cd build;
     ./main ../data_groups_approx_v2_2_epoch238.pt;
 
+The commands above are also run by the `run_build.zsh` script to ensure everything is working properly.
+
 The `../data_groups_approx_v2_2_epoch238.pt` is shipped with this repository for testing.
 Any other PyTorch model can be used, it will just need to be converted using the `create_torchscript_model.py` script from the `uml_picture_d` repository.
