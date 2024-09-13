@@ -5,8 +5,10 @@
 extern "C" {
 #endif
 
+#include <constants.h>
+
 void load_model(const char *filename);
-float* run_model(float data[1][1][32][32]);
+float* run_model(float data[1][1][INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]);
 
 #ifdef __cplusplus
 }

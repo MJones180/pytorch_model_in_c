@@ -1,5 +1,7 @@
 #include <stdio.h>
+#include <time.h>
 #include <c_wrapper.h>
+#include <constants.h>
 
 int main(int argc, const char* argv[]) {
     if (argc != 2) {
@@ -12,15 +14,24 @@ int main(int argc, const char* argv[]) {
     load_model(argv[1]);
     float* output = run_model(inputs);
 
-    for (int i = 0; i < 23; i++) {
+    for (int i = 0; i < OUTPUT_PIXEL_SIZE; i++) {
         printf("%f\n", *(output + i));
     }
+
+    // https://stackoverflow.com/a/5249129
+    clock_t tic = clock();
 
     int iterations = 5000;
     printf("Running %d iterations to test speed", iterations);
     for (int i = 0; i < iterations; i++) {
         run_model(inputs);
     }
+
+    clock_t toc = clock();
+    double total_time = (double)(toc - tic) / CLOCKS_PER_SEC;
+
+    printf("Total time for %d iterations: %f seconds\n", iterations, total_time);
+    printf("Average time per iteration: %f seconds\n", total_time / iterations);
 
     // Proper output:
     //  1.0341

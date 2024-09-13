@@ -2,13 +2,11 @@
 #define TORCHSCRIPT_NN_H
 
 #include <torch/script.h>
+#include <constants.h>
 
 #include <iostream>
 #include <memory>
 #include <string>
-
-constexpr int INPUT_PIXEL_SIZE = 32;
-constexpr int OUTPUT_PIXEL_SIZE = 23;
 
 class NN_Model {
     std::string model_filename;
