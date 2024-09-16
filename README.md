@@ -19,7 +19,8 @@ This script contains the absolute path to the `libtorch` library.
 The executable can be run by using the following two commands:
 
     cd build;
-    ./main ../data_groups_approx_v2_2_epoch238.pt;
+    # Uses only 1 core
+    taskset --cpu-list 1 ./main ../data_groups_approx_v2_2_epoch238.pt;
 
 The commands above are also run by the `run_build.zsh` script to ensure everything is working properly.
 
