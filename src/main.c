@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <time.h>
+#include <sys/time.h>
 #include <c_wrapper.h>
 #include <constants.h>
 
@@ -18,17 +18,17 @@ int main(int argc, const char* argv[]) {
         printf("%f\n", *(output + i));
     }
 
-    // https://stackoverflow.com/a/5249129
-    clock_t tic = clock();
+    struct timeval start, end;
+    gettimeofday(&start, NULL);
 
     int iterations = 5000;
-    printf("Running %d iterations to test speed", iterations);
+    printf("Running %d iterations to test speed\n", iterations);
     for (int i = 0; i < iterations; i++) {
         run_model(inputs);
     }
 
-    clock_t toc = clock();
-    double total_time = (double)(toc - tic) / CLOCKS_PER_SEC;
+    gettimeofday(&end, NULL);
+    double total_time = end.tv_sec + end.tv_usec / 1e6 - start.tv_sec - start.tv_usec / 1e6;
 
     printf("Total time for %d iterations: %f seconds\n", iterations, total_time);
     printf("Average time per iteration: %f seconds\n", total_time / iterations);

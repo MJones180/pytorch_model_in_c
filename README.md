@@ -22,6 +22,7 @@ The executable can be run by using the following two commands:
     # Uses only 1 core
     taskset --cpu-list 1 ./main ../data_groups_approx_v2_2_epoch238.pt;
 
+Note: if multiple cores can be used, then it should be `taskset --cpu-list 1,2,...`.
 The commands above are also run by the `run_build.zsh` script to ensure everything is working properly.
 
 The `../data_groups_approx_v2_2_epoch238.pt` is shipped with this repository for testing.
