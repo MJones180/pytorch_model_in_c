@@ -25,12 +25,12 @@ int main(int argc, const char* argv[]) {
         concat(model_path, "/example_data/input_line.txt");
 
     FILE* myfile = fopen(example_data_path, "r");
-    float inputs[1][1][32][32];
+    float inputs[32][32];
     double myvariable;
     for (int i = 0; i < 32; i++) {
         for (int j = 0; j < 32; j++) {
             fscanf(myfile, "%lf", &myvariable);
-            inputs[0][0][i][j] = myvariable;
+            inputs[i][j] = myvariable;
         }
     }
     fclose(myfile);
