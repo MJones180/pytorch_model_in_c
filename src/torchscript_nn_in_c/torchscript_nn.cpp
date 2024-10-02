@@ -1,15 +1,15 @@
 #include <torchscript_nn.h>
 
-NN_Model::NN_Model(std::string filename) {
-    model_filename = filename;
+NN_Model::NN_Model(std::string model_path) {
+    model_location = model_path + "/model.pt";
     try {
-        nn_model_obj = torch::jit::load(filename);
+        nn_model_obj = torch::jit::load(model_location);
     }
     catch (const c10::Error& e) {
         std::cerr << "error loading the model\n";
     }
 
-    std::cout << "Model loaded from: " << filename << "\n";
+    std::cout << "Model loaded from: " << model_location << "\n";
 
     // Should load in normalization data here
 }
