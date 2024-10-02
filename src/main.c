@@ -22,43 +22,52 @@ int main(int argc, const char* argv[]) {
 
     const char* model_path = argv[1];
 
-    char* example_data_path =
-        concat(model_path, "/example_data/input_line.txt");
+    printf("Loading in the example input and output rows\n");
+    char* data_path = concat(model_path, "/example_data/");
+    char* input_row_path = concat(data_path, "input_line.txt");
+    char* output_row_path = concat(data_path, "output_line.txt");
 
     // https://stackoverflow.com/a/7152018
-    FILE* myfile = fopen(example_data_path, "r");
+    FILE* text_file = fopen(input_row_path, "r");
     float inputs[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE];
     double double_value;
     for (int i = 0; i < INPUT_PIXEL_SIZE; i++) {
         for (int j = 0; j < INPUT_PIXEL_SIZE; j++) {
-            fscanf(myfile, "%lf", &double_value);
+            fscanf(text_file, "%lf", &double_value);
             inputs[i][j] = double_value;
         }
     }
-    fclose(myfile);
+    fclose(text_file);
 
-    load_model(model_path);
-    float* output = run_model(inputs);
-
+    text_file = fopen(output_row_path, "r");
+    float truth_output[OUTPUT_PIXEL_SIZE];
     for (int i = 0; i < OUTPUT_PIXEL_SIZE; i++) {
-        printf("%f\n", *(output + i));
+        fscanf(text_file, "%lf", &double_value);
+        truth_output[i] = double_value;
     }
+    fclose(text_file);
 
-    struct timeval start, end;
-    gettimeofday(&start, NULL);
+    printf("Calling the function to load in the model\n");
+    load_model(model_path);
+
+    printf("Calling the model to verify its outputs\n");
+    float* model_output = run_model(inputs);
+    printf("Truth Outputs, Model Outputs\n");
+    for (int i = 0; i < OUTPUT_PIXEL_SIZE; i++) {
+        printf("%f, %f\n", *(truth_output + i), *(model_output + i));
+    }
 
     int iterations = strtol(argv[2], NULL, 10);
     printf("Running %d iterations to test speed\n", iterations);
+    struct timeval start, end;
+    gettimeofday(&start, NULL);
     for (int i = 0; i < iterations; i++) {
         run_model(inputs);
     }
-
     gettimeofday(&end, NULL);
+    // https://stackoverflow.com/a/55346612
     double total_time =
         end.tv_sec + end.tv_usec / 1e6 - start.tv_sec - start.tv_usec / 1e6;
-
-    printf("Total time for %d iterations: %f seconds\n", iterations,
-           total_time);
     printf("Average time per iteration: %f seconds\n", total_time / iterations);
 
     // Proper output:
