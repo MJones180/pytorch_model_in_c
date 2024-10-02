@@ -9,8 +9,8 @@ extern "C" {
 
 static NN_Model *NN_Model_instance = NULL;
 
-void load_model(const char *filename) {
-    NN_Model_instance = new NN_Model(filename);
+void load_model(const char *model_path) {
+    NN_Model_instance = new NN_Model(model_path);
 }
 
 float* run_model(float data[1][1][INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]) {
