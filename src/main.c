@@ -14,8 +14,9 @@ char* concat(const char* s1, const char* s2) {
 }
 
 int main(int argc, const char* argv[]) {
-    if (argc != 2) {
-        fprintf(stderr, "usage: main <path-to-exported-script-module>\n");
+    if (argc != 3) {
+        fprintf(stderr,
+                "Usage: main <path to model folder> <benchmark row count>\n");
         return -1;
     }
 
@@ -24,6 +25,7 @@ int main(int argc, const char* argv[]) {
     char* example_data_path =
         concat(model_path, "/example_data/input_line.txt");
 
+    // https://stackoverflow.com/a/7152018
     FILE* myfile = fopen(example_data_path, "r");
     float inputs[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE];
     double double_value;
@@ -45,7 +47,7 @@ int main(int argc, const char* argv[]) {
     struct timeval start, end;
     gettimeofday(&start, NULL);
 
-    int iterations = 5000;
+    int iterations = strtol(argv[2], NULL, 10);
     printf("Running %d iterations to test speed\n", iterations);
     for (int i = 0; i < iterations; i++) {
         run_model(inputs);
