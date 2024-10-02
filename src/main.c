@@ -25,12 +25,12 @@ int main(int argc, const char* argv[]) {
         concat(model_path, "/example_data/input_line.txt");
 
     FILE* myfile = fopen(example_data_path, "r");
-    float inputs[32][32];
-    double myvariable;
-    for (int i = 0; i < 32; i++) {
-        for (int j = 0; j < 32; j++) {
-            fscanf(myfile, "%lf", &myvariable);
-            inputs[i][j] = myvariable;
+    float inputs[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE];
+    double double_value;
+    for (int i = 0; i < INPUT_PIXEL_SIZE; i++) {
+        for (int j = 0; j < INPUT_PIXEL_SIZE; j++) {
+            fscanf(myfile, "%lf", &double_value);
+            inputs[i][j] = double_value;
         }
     }
     fclose(myfile);
