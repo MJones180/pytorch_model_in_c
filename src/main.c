@@ -13,6 +13,8 @@ char* concat(const char* s1, const char* s2) {
     return result;
 }
 
+void print_step(const char* text) { printf("\n%s...\n", text); }
+
 int main(int argc, const char* argv[]) {
     if (argc != 3) {
         fprintf(stderr,
@@ -22,11 +24,10 @@ int main(int argc, const char* argv[]) {
 
     const char* model_path = argv[1];
 
-    printf("Loading in the example input and output rows\n");
+    print_step("Loading in the example input and output rows");
     char* data_path = concat(model_path, "/example_data/");
     char* input_row_path = concat(data_path, "input_line.txt");
     char* output_row_path = concat(data_path, "output_line.txt");
-
     // https://stackoverflow.com/a/7152018
     FILE* text_file = fopen(input_row_path, "r");
     float inputs[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE];
@@ -38,7 +39,6 @@ int main(int argc, const char* argv[]) {
         }
     }
     fclose(text_file);
-
     text_file = fopen(output_row_path, "r");
     float truth_output[OUTPUT_PIXEL_SIZE];
     for (int i = 0; i < OUTPUT_PIXEL_SIZE; i++) {
@@ -47,18 +47,19 @@ int main(int argc, const char* argv[]) {
     }
     fclose(text_file);
 
-    printf("Calling the function to load in the model\n");
+    print_step("Calling the function to load in the model");
     load_model(model_path);
 
-    printf("Calling the model to verify its outputs\n");
+    print_step("Calling the model to verify its outputs");
     float* model_output = run_model(inputs);
     printf("Truth Outputs, Model Outputs\n");
     for (int i = 0; i < OUTPUT_PIXEL_SIZE; i++) {
         printf("%f, %f\n", *(truth_output + i), *(model_output + i));
     }
 
+    print_step("Benchmarking the model's performance");
     int iterations = strtol(argv[2], NULL, 10);
-    printf("Running %d iterations to test speed\n", iterations);
+    printf("Using %d iterations\n", iterations);
     struct timeval start, end;
     gettimeofday(&start, NULL);
     for (int i = 0; i < iterations; i++) {
