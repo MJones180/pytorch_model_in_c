@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 project(NeuralNetworkModelInference)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 find_package(Torch REQUIRED)
 
 include_directories(${PROJECT_SOURCE_DIR}/src/)
