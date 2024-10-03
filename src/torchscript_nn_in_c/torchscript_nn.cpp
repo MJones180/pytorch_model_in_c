@@ -7,10 +7,37 @@ NN_Model::NN_Model(std::string model_path) {
     } catch (const c10::Error& e) {
         std::cerr << "error loading the model\n";
     }
-
     std::cout << "Model loaded from: " << model_location << "\n";
 
-    // Should load in normalization data here
+    std::string base_field_path = model_path + "/base_field.txt";
+    std::cout << "Opening the base field: " << base_field_path << "\n";
+    std::ifstream source;
+    source.open(base_field_path);
+    if (!source) {
+        std::cerr << "error loading in base field\n";
+    }
+    for (int i = 0; i < INPUT_PIXEL_SIZE; i++) {
+        for (int j = 0; j < INPUT_PIXEL_SIZE; j++) {
+            source >> base_field[i][j];
+        }
+    }
+    source.close();
+
+    std::string norm_path = model_path + "/norm_data.txt";
+    std::cout << "Opening the norm data: " << norm_path << "\n";
+    source.open(norm_path);
+    if (!source) {
+        std::cerr << "error loading in norm data\n";
+    }
+    source >> input_max_min_diff;
+    source >> input_min_x;
+    for (int i = 0; i < OUTPUT_PIXEL_SIZE; i++) {
+        source >> output_max_min_diff[i];
+    }
+    for (int i = 0; i < OUTPUT_PIXEL_SIZE; i++) {
+        source >> output_min_x[i];
+    }
+    source.close();
 }
 
 float* NN_Model::run_model(float data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]) {
