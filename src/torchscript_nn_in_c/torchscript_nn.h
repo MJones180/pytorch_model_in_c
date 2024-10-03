@@ -26,6 +26,9 @@ class NN_Model {
     void load_base_field();
     void load_norm_data();
 
+    float* call_model(float data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]);
+    void denorm(float* data);
+
   public:
     NN_Model(std::string model_path);
     float* run_model(float data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]);
