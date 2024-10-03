@@ -25,7 +25,7 @@ int main(int argc, const char* argv[]) {
     const char* model_path = argv[1];
 
     print_step("Loading in the example input and output rows");
-    char* data_path = concat(model_path, "/example_data/");
+    char* data_path = concat(model_path, "/example_validation_data/");
     char* input_row_path = concat(data_path, "input_line.txt");
     char* output_row_path = concat(data_path, "output_line.txt");
     // https://stackoverflow.com/a/7152018

@@ -34,6 +34,10 @@ The commands above are also run by the `run_build.zsh` script to ensure everythi
 The `ts_data_groups_approx_2_epoch285` model is shipped with this repository for testing.
 Any other PyTorch model can be used, it will just need to be converted using the `create_torchscript_model.py` script from the `uml_picture_d` repository.
 
+### Normalization
+
+For the normalization data, there should be a single value for all inputs and each output should have its own value.
+
 ## Timing
 
 Results are for 5,000 iterations of the model shipped with this repo (`ts_data_groups_approx_2_epoch285`).

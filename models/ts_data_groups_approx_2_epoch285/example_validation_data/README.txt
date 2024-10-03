@@ -12,3 +12,8 @@ Code snippet to export the first row of the input and output to text files:
     output_line = datafile['outputs'][0]
     np.savetxt('input_line.txt', input_line, fmt='%.8f')
     np.savetxt('output_line.txt', output_line, fmt='%.8f')
+
+For this data, since it is validation, the inputs should be already normalized.
+Additionally, the outputs are also normalized, so the model's outputs will need
+to be denormalized before comparisons are made.
+The base field should already be subtracted off of this data.
