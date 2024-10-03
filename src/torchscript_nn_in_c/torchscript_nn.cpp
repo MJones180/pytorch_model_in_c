@@ -52,7 +52,7 @@ NN_Model::NN_Model(std::string model_path) {
     load_norm_data();
 }
 
-float* NN_Model::call_model(float data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]) {
+float* NN_Model::call_model(float* data) {
     // The data coming in is assumed to be a batch size of one with one channel.
     // That means, it should just be a 2D array. However, to run through
     // TorchScript we will need to make it 4D (batch size, channels, *pixels).
@@ -75,7 +75,7 @@ float* NN_Model::call_model(float data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]) {
 
 void NN_Model::denorm(float* data) { data[0] = 32; }
 
-float* NN_Model::run_model(float data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]) {
+float* NN_Model::run_model(float* data) {
     float* result = call_model(data);
     std::cout << result[0] << " " << result[1] << " " << result[2] << "\n";
     denorm(result);
