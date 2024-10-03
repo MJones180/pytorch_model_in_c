@@ -10,7 +10,7 @@
 #include <string>
 
 class NN_Model {
-    std::string model_location;
+    std::string model_dir_path;
     torch::jit::script::Module nn_model_obj;
     // The base field that should be subtracted off
     float base_field[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE];
@@ -20,6 +20,11 @@ class NN_Model {
     // Each output should have its own value
     float output_max_min_diff[OUTPUT_PIXEL_SIZE];
     float output_min_x[OUTPUT_PIXEL_SIZE];
+
+  private:
+    void load_model();
+    void load_base_field();
+    void load_norm_data();
 
   public:
     NN_Model(std::string model_path);

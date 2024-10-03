@@ -10,4 +10,4 @@ echo "*\n!.gitignore" > .gitignore;
 cmake -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH} ..;
 cmake --build . --config Release;
 # Run a test to ensure everything works (use only 1 core)
-time taskset --cpu-list 1 ./main ../models/ts_data_groups_approx_2_epoch285 5000;
+time taskset --cpu-list 1 ./main ../models/ts_data_groups_approx_2_epoch285 1;

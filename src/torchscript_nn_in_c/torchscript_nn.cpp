@@ -1,15 +1,17 @@
 #include <torchscript_nn.h>
 
-NN_Model::NN_Model(std::string model_path) {
-    model_location = model_path + "/model.pt";
+void NN_Model::load_model() {
+    std::string model_location = model_dir_path + "/model.pt";
     try {
         nn_model_obj = torch::jit::load(model_location);
     } catch (const c10::Error& e) {
         std::cerr << "error loading the model\n";
     }
     std::cout << "Model loaded from: " << model_location << "\n";
+}
 
-    std::string base_field_path = model_path + "/base_field.txt";
+void NN_Model::load_base_field() {
+    std::string base_field_path = model_dir_path + "/base_field.txt";
     std::cout << "Opening the base field: " << base_field_path << "\n";
     std::ifstream source;
     source.open(base_field_path);
@@ -22,9 +24,12 @@ NN_Model::NN_Model(std::string model_path) {
         }
     }
     source.close();
+}
 
-    std::string norm_path = model_path + "/norm_data.txt";
+void NN_Model::load_norm_data() {
+    std::string norm_path = model_dir_path + "/norm_data.txt";
     std::cout << "Opening the norm data: " << norm_path << "\n";
+    std::ifstream source;
     source.open(norm_path);
     if (!source) {
         std::cerr << "error loading in norm data\n";
@@ -38,6 +43,13 @@ NN_Model::NN_Model(std::string model_path) {
         source >> output_min_x[i];
     }
     source.close();
+}
+
+NN_Model::NN_Model(std::string model_path) {
+    model_dir_path = model_path;
+    load_model();
+    load_base_field();
+    load_norm_data();
 }
 
 float* NN_Model::run_model(float data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]) {
