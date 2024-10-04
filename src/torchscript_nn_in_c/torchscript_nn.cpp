@@ -54,6 +54,7 @@ NN_Model::NN_Model(std::string model_path) {
 
 double* NN_Model::call_model(double data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]) {
 
+    // The converted TorchScript model expects floats instead of doubles
     float data_float[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE];
     for (int i = 0; i < INPUT_PIXEL_SIZE; i++) {
         for (int j = 0; j < INPUT_PIXEL_SIZE; j++) {

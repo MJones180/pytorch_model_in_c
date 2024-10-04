@@ -37,7 +37,7 @@ Any other PyTorch model can be used, it will just need to be converted using the
 ### Normalization
 
 For the normalization data, there should be a single value for all inputs and each output should have its own value.
-Additionally, the data should be normalized between -1 and 1.
+Additionally, the model should have been trained on data that was normalized between -1 and 1.
 
 ## Timing
 
