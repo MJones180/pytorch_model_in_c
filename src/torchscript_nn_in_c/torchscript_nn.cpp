@@ -52,12 +52,20 @@ NN_Model::NN_Model(std::string model_path) {
     load_norm_data();
 }
 
-float* NN_Model::call_model(float data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]) {
+double* NN_Model::call_model(double data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]) {
+
+    float data_float[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE];
+    for (int i = 0; i < INPUT_PIXEL_SIZE; i++) {
+        for (int j = 0; j < INPUT_PIXEL_SIZE; j++) {
+            data_float[i][j] = (float)data[i][j];
+        }
+    }
+
     // The data coming in is assumed to be a batch size of one with one channel.
     // That means, it should just be a 2D array. However, to run through
     // TorchScript we will need to make it 4D (batch size, channels, *pixels).
-    torch::Tensor inputs_tensor =
-        torch::from_blob(data, {1, 1, INPUT_PIXEL_SIZE, INPUT_PIXEL_SIZE});
+    torch::Tensor inputs_tensor = torch::from_blob(
+        data_float, {1, 1, INPUT_PIXEL_SIZE, INPUT_PIXEL_SIZE});
 
     std::vector<torch::jit::IValue> inputs;
     inputs.push_back(inputs_tensor);
@@ -66,15 +74,15 @@ float* NN_Model::call_model(float data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]) {
     at::Tensor model_output = nn_model_obj.forward(inputs).toTensor();
 
     // https://stackoverflow.com/a/36784891
-    float* output_cpp = new float[OUTPUT_PIXEL_SIZE];
-    // https://www.simonwenkel.com/notes/software_libraries/pytorch/data_transfer_to_and_from_pytorch.html
-    std::memcpy(output_cpp, model_output.data_ptr(),
-                sizeof(float) * model_output.numel());
+    double* output_cpp = new double[OUTPUT_PIXEL_SIZE];
+    for (int i = 0; i < OUTPUT_PIXEL_SIZE; i++) {
+        output_cpp[i] = model_output[0][i].item<double>();
+    }
     return output_cpp;
 }
 
 void NN_Model::subtract_base_field(
-    float data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]) {
+    double data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]) {
     for (int i = 0; i < INPUT_PIXEL_SIZE; i++) {
         for (int j = 0; j < INPUT_PIXEL_SIZE; j++) {
             data[i][j] -= base_field[i][j];
@@ -82,7 +90,7 @@ void NN_Model::subtract_base_field(
     }
 }
 
-void NN_Model::norm(float data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]) {
+void NN_Model::norm(double data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]) {
     for (int i = 0; i < INPUT_PIXEL_SIZE; i++) {
         for (int j = 0; j < INPUT_PIXEL_SIZE; j++) {
             data[i][j] =
@@ -91,21 +99,20 @@ void NN_Model::norm(float data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]) {
     }
 }
 
-void NN_Model::denorm(float data[OUTPUT_PIXEL_SIZE]) {
+void NN_Model::denorm(double data[OUTPUT_PIXEL_SIZE]) {
     for (int i = 0; i < OUTPUT_PIXEL_SIZE; i++) {
         data[i] =
             (((data[i] + 1) / 2) * output_max_min_diff[i]) + output_min_x[i];
     }
 }
 
-float* NN_Model::run_model(float data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]) {
-    // NOTE::
-    // Should create a copy of the data here so we don't alter the original
-    subtract_base_field(data);
-    norm(data);
-    float* result = call_model(data);
-    // std::cout << result[0] << " " << result[1] << " " << result[2] << "\n";
+double* NN_Model::run_model(double data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]) {
+    double data_copied[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE];
+    std::memcpy(data_copied, data,
+                sizeof(double) * INPUT_PIXEL_SIZE * INPUT_PIXEL_SIZE);
+    subtract_base_field(data_copied);
+    norm(data_copied);
+    double* result = call_model(data_copied);
     denorm(result);
-    // std::cout << result[0] << " " << result[1] << " " << result[2] << "\n";
     return result;
 }

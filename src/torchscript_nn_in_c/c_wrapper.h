@@ -8,7 +8,7 @@ extern "C" {
 #include <constants.h>
 
 void load_model(const char* model_path);
-float* run_model(float data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]);
+double* run_model(double data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]);
 
 #ifdef __cplusplus
 }

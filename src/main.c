@@ -25,12 +25,12 @@ int main(int argc, const char* argv[]) {
     const char* model_path = argv[1];
 
     print_step("Loading in the example input and output rows");
-    char* data_path = concat(model_path, "/example_validation_data/");
+    char* data_path = concat(model_path, "/example_data/");
     char* input_row_path = concat(data_path, "input_line.txt");
     char* output_row_path = concat(data_path, "output_line.txt");
     // https://stackoverflow.com/a/7152018
     FILE* text_file = fopen(input_row_path, "r");
-    float inputs[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE];
+    double inputs[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE];
     double double_value;
     for (int i = 0; i < INPUT_PIXEL_SIZE; i++) {
         for (int j = 0; j < INPUT_PIXEL_SIZE; j++) {
@@ -40,7 +40,7 @@ int main(int argc, const char* argv[]) {
     }
     fclose(text_file);
     text_file = fopen(output_row_path, "r");
-    float truth_output[OUTPUT_PIXEL_SIZE];
+    double truth_output[OUTPUT_PIXEL_SIZE];
     for (int i = 0; i < OUTPUT_PIXEL_SIZE; i++) {
         fscanf(text_file, "%lf", &double_value);
         truth_output[i] = double_value;
@@ -51,10 +51,10 @@ int main(int argc, const char* argv[]) {
     load_model(model_path);
 
     print_step("Calling the model to verify its outputs");
-    float* model_output = run_model(inputs);
+    double* model_output = run_model(inputs);
     printf("Truth Outputs, Model Outputs\n");
     for (int i = 0; i < OUTPUT_PIXEL_SIZE; i++) {
-        printf("%f, %f\n", *(truth_output + i), *(model_output + i));
+        printf("%.15f, %.15f\n", *(truth_output + i), *(model_output + i));
     }
 
     print_step("Benchmarking the model's performance");
@@ -70,29 +70,4 @@ int main(int argc, const char* argv[]) {
     double total_time =
         end.tv_sec + end.tv_usec / 1e6 - start.tv_sec - start.tv_usec / 1e6;
     printf("Average time per iteration: %f seconds\n", total_time / iterations);
-
-    // Proper output:
-    //  1.0341
-    //  0.66958
-    //  1.031
-    // -0.83508
-    //  0.53434
-    //  0.39728
-    // -0.9179
-    // -0.48178
-    //  0.21093
-    // -0.00046546
-    //  0.22018
-    //  0.94071
-    // -0.68948
-    //  0.17338
-    //  0.17838
-    //  0.26740
-    // -0.59733
-    // -0.12139
-    //  0.18144
-    //  0.47307
-    // -0.016768
-    //  0.35732
-    //  0.23316
 }

@@ -13,27 +13,27 @@ class NN_Model {
     std::string model_dir_path;
     torch::jit::script::Module nn_model_obj;
     // The base field that should be subtracted off
-    float base_field[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE];
+    double base_field[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE];
     // There should be a single value for all inputs
-    float input_max_min_diff;
-    float input_min_x;
+    double input_max_min_diff;
+    double input_min_x;
     // Each output should have its own value
-    float output_max_min_diff[OUTPUT_PIXEL_SIZE];
-    float output_min_x[OUTPUT_PIXEL_SIZE];
+    double output_max_min_diff[OUTPUT_PIXEL_SIZE];
+    double output_min_x[OUTPUT_PIXEL_SIZE];
 
   private:
     void load_model();
     void load_base_field();
     void load_norm_data();
 
-    float* call_model(float data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]);
-    void subtract_base_field(float data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]);
-    void norm(float data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]);
-    void denorm(float* data);
+    double* call_model(double data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]);
+    void subtract_base_field(double data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]);
+    void norm(double data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]);
+    void denorm(double* data);
 
   public:
     NN_Model(std::string model_path);
-    float* run_model(float data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]);
+    double* run_model(double data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]);
 };
 
 #endif
