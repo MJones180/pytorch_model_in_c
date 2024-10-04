@@ -13,27 +13,31 @@ class NN_Model {
     std::string model_dir_path;
     torch::jit::script::Module nn_model_obj;
     // The base field that should be subtracted off
-    double base_field[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE];
-    // There should be a single value for all inputs
-    double input_max_min_diff;
-    double input_min_x;
+    double base_field[IPS][IPS];
+    // There should be a single value for all inputs.
+    double input_mmd; // Input max min diff
+    double input_mx;  // Input min x
     // Each output should have its own value
-    double output_max_min_diff[OUTPUT_PIXEL_SIZE];
-    double output_min_x[OUTPUT_PIXEL_SIZE];
+    double output_mmd[OVS]; // Output max min diff
+    double output_mx[OVS];  // Output min x
 
   private:
+    // Functions that will be called by the constructor to get things set up
     void load_model();
     void load_base_field();
     void load_norm_data();
 
-    double* call_model(double data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]);
-    void subtract_base_field(double data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]);
-    void norm(double data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]);
-    void denorm(double* data);
+    // Pre-processing
+    void subtract_base_field(double data[IPS][IPS]);
+    void normalize(double data[IPS][IPS]);
+    // Call the TorchScript model
+    double* model_inference(double data[IPS][IPS]);
+    // Post-processing
+    void denormalize(double* data);
 
   public:
     NN_Model(std::string model_path);
-    double* run_model(double data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]);
+    double* run_zernike_model(double input_pixels[IPS][IPS]);
 };
 
 #endif

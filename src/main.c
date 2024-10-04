@@ -31,25 +31,25 @@ int main(int argc, const char* argv[]) {
     char* python_output_row_path = concat(data_path, "python_output_line.txt");
     // https://stackoverflow.com/a/7152018
     FILE* text_file = fopen(input_row_path, "r");
-    double inputs[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE];
+    double inputs[IPS][IPS];
     double double_value;
-    for (int i = 0; i < INPUT_PIXEL_SIZE; i++) {
-        for (int j = 0; j < INPUT_PIXEL_SIZE; j++) {
+    for (int i = 0; i < IPS; i++) {
+        for (int j = 0; j < IPS; j++) {
             fscanf(text_file, "%lf", &double_value);
             inputs[i][j] = double_value;
         }
     }
     fclose(text_file);
     text_file = fopen(output_row_path, "r");
-    double truth_output[OUTPUT_PIXEL_SIZE];
-    for (int i = 0; i < OUTPUT_PIXEL_SIZE; i++) {
+    double truth_output[OVS];
+    for (int i = 0; i < OVS; i++) {
         fscanf(text_file, "%lf", &double_value);
         truth_output[i] = double_value;
     }
     fclose(text_file);
     text_file = fopen(python_output_row_path, "r");
-    double python_output[OUTPUT_PIXEL_SIZE];
-    for (int i = 0; i < OUTPUT_PIXEL_SIZE; i++) {
+    double python_output[OVS];
+    for (int i = 0; i < OVS; i++) {
         fscanf(text_file, "%lf", &double_value);
         python_output[i] = double_value;
     }
@@ -59,9 +59,9 @@ int main(int argc, const char* argv[]) {
     load_model(model_path);
 
     print_step("Calling the model to verify its outputs");
-    double* model_output = run_model(inputs);
+    double* model_output = run_zernike_model(inputs);
     printf("Truth Outputs, Python Outputs, Model Outputs\n");
-    for (int i = 0; i < OUTPUT_PIXEL_SIZE; i++) {
+    for (int i = 0; i < OVS; i++) {
         printf("%.16f, %.16f, %.16f\n", *(truth_output + i),
                *(python_output + i), *(model_output + i));
     }
@@ -72,7 +72,7 @@ int main(int argc, const char* argv[]) {
     struct timeval start, end;
     gettimeofday(&start, NULL);
     for (int i = 0; i < iterations; i++) {
-        run_model(inputs);
+        run_zernike_model(inputs);
     }
     gettimeofday(&end, NULL);
     // https://stackoverflow.com/a/55346612

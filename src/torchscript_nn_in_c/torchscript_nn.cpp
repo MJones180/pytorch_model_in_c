@@ -1,48 +1,44 @@
 #include <torchscript_nn.h>
 
 void NN_Model::load_model() {
-    std::string model_location = model_dir_path + "/model.pt";
+    std::string file_path = model_dir_path + "/model.pt";
     try {
-        nn_model_obj = torch::jit::load(model_location);
+        nn_model_obj = torch::jit::load(file_path);
     } catch (const c10::Error& e) {
-        std::cerr << "error loading the model\n";
+        std::cerr << "error loading in the model\n";
     }
-    std::cout << "Model loaded from: " << model_location << "\n";
+    std::cout << "Model loaded from: " << file_path << "\n";
 }
 
 void NN_Model::load_base_field() {
-    std::string base_field_path = model_dir_path + "/base_field.txt";
-    std::cout << "Opening the base field: " << base_field_path << "\n";
-    std::ifstream source;
-    source.open(base_field_path);
-    if (!source) {
-        std::cerr << "error loading in base field\n";
-    }
-    for (int i = 0; i < INPUT_PIXEL_SIZE; i++) {
-        for (int j = 0; j < INPUT_PIXEL_SIZE; j++) {
-            source >> base_field[i][j];
-        }
-    }
-    source.close();
+    std::string file_path = model_dir_path + "/base_field.txt";
+    std::ifstream fs;
+    fs.open(file_path);
+    if (!fs)
+        std::cerr << "error loading in the base field\n";
+    std::cout << "Base field loaded from: " << file_path << "\n";
+    for (int i = 0; i < IPS; i++)
+        for (int j = 0; j < IPS; j++)
+            fs >> base_field[i][j];
+    fs.close();
 }
 
 void NN_Model::load_norm_data() {
-    std::string norm_path = model_dir_path + "/norm_data.txt";
-    std::cout << "Opening the norm data: " << norm_path << "\n";
-    std::ifstream source;
-    source.open(norm_path);
-    if (!source) {
-        std::cerr << "error loading in norm data\n";
-    }
-    source >> input_max_min_diff;
-    source >> input_min_x;
-    for (int i = 0; i < OUTPUT_PIXEL_SIZE; i++) {
-        source >> output_max_min_diff[i];
-    }
-    for (int i = 0; i < OUTPUT_PIXEL_SIZE; i++) {
-        source >> output_min_x[i];
-    }
-    source.close();
+    std::string file_path = model_dir_path + "/norm_data.txt";
+    std::ifstream fs;
+    fs.open(file_path);
+    if (!fs)
+        std::cerr << "error loading in the norm data\n";
+    std::cout << "Norm data loaded from: " << file_path << "\n";
+    // First two lines are input norm data.
+    fs >> input_mmd;
+    fs >> input_mx;
+    // Last two lines are output norm data.
+    for (int i = 0; i < OVS; i++)
+        fs >> output_mmd[i];
+    for (int i = 0; i < OVS; i++)
+        fs >> output_mx[i];
+    fs.close();
 }
 
 NN_Model::NN_Model(std::string model_path) {
@@ -52,68 +48,63 @@ NN_Model::NN_Model(std::string model_path) {
     load_norm_data();
 }
 
-double* NN_Model::call_model(double data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]) {
-
-    // The converted TorchScript model expects floats instead of doubles
-    float data_float[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE];
-    for (int i = 0; i < INPUT_PIXEL_SIZE; i++) {
-        for (int j = 0; j < INPUT_PIXEL_SIZE; j++) {
-            data_float[i][j] = (float)data[i][j];
-        }
-    }
-
-    // The data coming in is assumed to be a batch size of one with one channel.
-    // That means, it should just be a 2D array. However, to run through
-    // TorchScript we will need to make it 4D (batch size, channels, *pixels).
-    torch::Tensor inputs_tensor = torch::from_blob(
-        data_float, {1, 1, INPUT_PIXEL_SIZE, INPUT_PIXEL_SIZE});
-
+double* NN_Model::model_inference(double data[IPS][IPS]) {
+    // The TorchScript model expects all data to be floats instead of doubles.
+    float data_as_float[IPS][IPS];
+    for (int i = 0; i < IPS; i++)
+        for (int j = 0; j < IPS; j++)
+            data_as_float[i][j] = (float)data[i][j];
+    // The data being passed to this function is a single row with one channel.
+    // However, the model expects a 4D array of the shape:
+    //  (batch size, channels, input pixels, input pixels)
+    // That means, we need to add two empty dimensions at the start.
+    torch::Tensor inputs_tensor =
+        torch::from_blob(data_as_float, {1, 1, IPS, IPS});
+    // The model expects a vector, not a Tensor, so we need to convert it.
     std::vector<torch::jit::IValue> inputs;
     inputs.push_back(inputs_tensor);
-
-    // Execute the model and turn its output into a tensor.
+    // Run the model and convert its output into a tensor.
     at::Tensor model_output = nn_model_obj.forward(inputs).toTensor();
-
-    // https://stackoverflow.com/a/36784891
-    double* output_cpp = new double[OUTPUT_PIXEL_SIZE];
-    for (int i = 0; i < OUTPUT_PIXEL_SIZE; i++) {
+    // We cannot allocate the array locally, instead we need to dynamically
+    // allocate the array memory. (https://stackoverflow.com/a/36784891)
+    double* output_cpp = new double[OVS];
+    // The values should be returned as type double, not float.
+    for (int i = 0; i < OVS; i++)
         output_cpp[i] = model_output[0][i].item<double>();
-    }
     return output_cpp;
 }
 
-void NN_Model::subtract_base_field(
-    double data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]) {
-    for (int i = 0; i < INPUT_PIXEL_SIZE; i++) {
-        for (int j = 0; j < INPUT_PIXEL_SIZE; j++) {
+void NN_Model::subtract_base_field(double data[IPS][IPS]) {
+    // Subtract the base field off of each of the pixels.
+    for (int i = 0; i < IPS; i++)
+        for (int j = 0; j < IPS; j++)
             data[i][j] -= base_field[i][j];
-        }
-    }
 }
 
-void NN_Model::norm(double data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]) {
-    for (int i = 0; i < INPUT_PIXEL_SIZE; i++) {
-        for (int j = 0; j < INPUT_PIXEL_SIZE; j++) {
-            data[i][j] =
-                2 * (data[i][j] - input_min_x) / input_max_min_diff - 1;
-        }
-    }
+void NN_Model::normalize(double data[IPS][IPS]) {
+    // Normalize the data between -1 and 1.
+    for (int i = 0; i < IPS; i++)
+        for (int j = 0; j < IPS; j++)
+            data[i][j] = 2 * (data[i][j] - input_mx) / input_mmd - 1;
 }
 
-void NN_Model::denorm(double data[OUTPUT_PIXEL_SIZE]) {
-    for (int i = 0; i < OUTPUT_PIXEL_SIZE; i++) {
-        data[i] =
-            (((data[i] + 1) / 2) * output_max_min_diff[i]) + output_min_x[i];
-    }
+void NN_Model::denormalize(double data[OVS]) {
+    // Denormalize the data from being between -1 and 1.
+    for (int i = 0; i < OVS; i++)
+        data[i] = (((data[i] + 1) / 2) * output_mmd[i]) + output_mx[i];
 }
 
-double* NN_Model::run_model(double data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]) {
-    double data_copied[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE];
-    std::memcpy(data_copied, data,
-                sizeof(double) * INPUT_PIXEL_SIZE * INPUT_PIXEL_SIZE);
-    subtract_base_field(data_copied);
-    norm(data_copied);
-    double* result = call_model(data_copied);
-    denorm(result);
-    return result;
+double* NN_Model::run_zernike_model(double input_pixels[IPS][IPS]) {
+    // Create a copy of the data so that the original is not mutated.
+    // This function only accepts one row of data at a time (hence being 2D).
+    double data_copy[IPS][IPS];
+    std::memcpy(data_copy, input_pixels, sizeof(double) * IPS * IPS);
+    // Pre-processing steps.
+    subtract_base_field(data_copy); // Subtract off the base field
+    normalize(data_copy);           // Normalize the data between -1 and 1
+    // Call the model.
+    double* model_output = model_inference(data_copy);
+    // Post-processing steps.
+    denormalize(model_output); // Denormalize the data
+    return model_output;
 }
