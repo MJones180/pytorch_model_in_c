@@ -28,6 +28,7 @@ int main(int argc, const char* argv[]) {
     char* data_path = concat(model_path, "/example_data/");
     char* input_row_path = concat(data_path, "input_line.txt");
     char* output_row_path = concat(data_path, "output_line.txt");
+    char* python_output_row_path = concat(data_path, "python_output_line.txt");
     // https://stackoverflow.com/a/7152018
     FILE* text_file = fopen(input_row_path, "r");
     double inputs[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE];
@@ -46,15 +47,23 @@ int main(int argc, const char* argv[]) {
         truth_output[i] = double_value;
     }
     fclose(text_file);
+    text_file = fopen(python_output_row_path, "r");
+    double python_output[OUTPUT_PIXEL_SIZE];
+    for (int i = 0; i < OUTPUT_PIXEL_SIZE; i++) {
+        fscanf(text_file, "%lf", &double_value);
+        python_output[i] = double_value;
+    }
+    fclose(text_file);
 
     print_step("Calling the function to load in the model");
     load_model(model_path);
 
     print_step("Calling the model to verify its outputs");
     double* model_output = run_model(inputs);
-    printf("Truth Outputs, Model Outputs\n");
+    printf("Truth Outputs, Python Outputs, Model Outputs\n");
     for (int i = 0; i < OUTPUT_PIXEL_SIZE; i++) {
-        printf("%.15f, %.15f\n", *(truth_output + i), *(model_output + i));
+        printf("%.16f, %.16f, %.16f\n", *(truth_output + i),
+               *(python_output + i), *(model_output + i));
     }
 
     print_step("Benchmarking the model's performance");
