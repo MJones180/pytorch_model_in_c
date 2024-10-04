@@ -52,7 +52,7 @@ NN_Model::NN_Model(std::string model_path) {
     load_norm_data();
 }
 
-float* NN_Model::call_model(float* data) {
+float* NN_Model::call_model(float data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]) {
     // The data coming in is assumed to be a batch size of one with one channel.
     // That means, it should just be a 2D array. However, to run through
     // TorchScript we will need to make it 4D (batch size, channels, *pixels).
@@ -73,27 +73,39 @@ float* NN_Model::call_model(float* data) {
     return output_cpp;
 }
 
-void NN_Model::denorm(float* data) { data[0] = 32; }
-
-float* NN_Model::run_model(float* data) {
-    float* result = call_model(data);
-    std::cout << result[0] << " " << result[1] << " " << result[2] << "\n";
-    denorm(result);
-    std::cout << result[0] << " " << result[1] << " " << result[2] << "\n";
-    return result;
+void NN_Model::subtract_base_field(
+    float data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]) {
+    for (int i = 0; i < INPUT_PIXEL_SIZE; i++) {
+        for (int j = 0; j < INPUT_PIXEL_SIZE; j++) {
+            data[i][j] -= base_field[i][j];
+        }
+    }
 }
 
-// norm
-//     # (data - min_x) / (max_x - min_x)
-//     # -> (data - min_x) / max_min_diff
-//     norm = (data - min_x) / max_min_diff
-//     if ones_range:
-//         # -> 2 * [ (data - min_x) / max_min_diff ] - 1
-//         return 2 * norm - 1
-//     return norm
-// denorm
-//     if ones_range:
-//         return (((data + 1) / 2) * max_min_diff) + min_x
-//     # norm = (original - min_x) / max_min_diff
-//     # -> original = (norm * max_min_diff) + min_x
-//     return (data * max_min_diff) + min_x
+void NN_Model::norm(float data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]) {
+    for (int i = 0; i < INPUT_PIXEL_SIZE; i++) {
+        for (int j = 0; j < INPUT_PIXEL_SIZE; j++) {
+            data[i][j] =
+                2 * (data[i][j] - input_min_x) / input_max_min_diff - 1;
+        }
+    }
+}
+
+void NN_Model::denorm(float data[OUTPUT_PIXEL_SIZE]) {
+    for (int i = 0; i < OUTPUT_PIXEL_SIZE; i++) {
+        data[i] =
+            (((data[i] + 1) / 2) * output_max_min_diff[i]) + output_min_x[i];
+    }
+}
+
+float* NN_Model::run_model(float data[INPUT_PIXEL_SIZE][INPUT_PIXEL_SIZE]) {
+    // NOTE::
+    // Should create a copy of the data here so we don't alter the original
+    subtract_base_field(data);
+    norm(data);
+    float* result = call_model(data);
+    // std::cout << result[0] << " " << result[1] << " " << result[2] << "\n";
+    denorm(result);
+    // std::cout << result[0] << " " << result[1] << " " << result[2] << "\n";
+    return result;
+}
