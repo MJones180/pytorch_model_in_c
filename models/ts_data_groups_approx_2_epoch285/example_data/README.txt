@@ -13,3 +13,5 @@ Code snippet to export the first row of the input and output to text files:
 
 For this data, since it was preprocessed using the `preprocess_data_bare` script,
 no normalization is done. Additionally, the base field has not been subtracted off.
+
+The `python_output_line.txt` file is manually exported from the `model_test` script.
