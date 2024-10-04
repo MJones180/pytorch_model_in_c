@@ -54,5 +54,3 @@ Additionally, all times reported are in milliseconds.
     - 32 local cores: ~1
 
 Note: total logical cores = physical cores * threads per core.
-
-Note: Current C times do not include normalization and denormalization.
