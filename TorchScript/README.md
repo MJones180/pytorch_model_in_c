@@ -1,8 +1,8 @@
-# PyTorch Model in C
+# TorchScript
 
 ## Installation
 
-This repository runs a C++ TorchScript model in C.
+This runs a C++ TorchScript model in C.
 
 First, the C++ `libtorch` library must be installed.
 Instructions for doing this can be found at ( https://pytorch.org/cppdocs/installing.html ).
@@ -24,14 +24,14 @@ The executable can be run by using the following two commands:
 
     cd build;
     # Uses only 1 core
-    taskset --cpu-list 1 ./main ../models/ts_data_groups_approx_2_epoch285 5000;
+    taskset --cpu-list 1 ./main ../models/exported_data_groups_approx_2_epoch285 5000;
 
 Note: if multiple cores can be used, then it should be `taskset --cpu-list 1,2,...`.
 The commands above are also run by the `run_build.zsh` script to ensure everything is working properly.
 
 ## Model
 
-The `ts_data_groups_approx_2_epoch285` model is shipped with this repository for testing.
+The `exported_data_groups_approx_2_epoch285` model is shipped with this code for testing.
 Any other PyTorch model can be used, it will just need to be converted using the `export_model.py` script from the `uml_picture_d` repository.
 Under the hood, this is using the `torch.jit.trace` function to convert the PyTorch model to a TorchScript model.
 
@@ -42,7 +42,7 @@ Additionally, the model should have been trained on data that was normalized bet
 
 ## Timing
 
-Results are for 5,000 iterations of the model shipped with this repo (`ts_data_groups_approx_2_epoch285`).
+Results are for 5,000 iterations of the model shipped with this code (`exported_data_groups_approx_2_epoch285`).
 All timings were taken using an AMD Ryzen 9 7950X CPU (no GPU).
 Additionally, all times reported are in milliseconds.
 
