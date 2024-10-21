@@ -4,7 +4,7 @@
 
 This runs a C++ TorchScript model in C.
 
-First, the C++ `libtorch` library must be installed.
+First, the C++ `libtorch` library must be downloaded.
 Instructions for doing this can be found at ( https://pytorch.org/cppdocs/installing.html ).
 Once this is downloaded, it must be placed at `./libraries/libtorch`.
 

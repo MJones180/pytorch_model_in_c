@@ -1,6 +1,7 @@
 # PyTorch Model in C
 
 I know having two completely separate folders is bad etiquette, but it is just a tad bit easier.
+The reason for this is TorchScript requires C++ while ONNX is just in C.
 
 ## TorchScript
 
