@@ -32,7 +32,8 @@ The commands above are also run by the `run_build.zsh` script to ensure everythi
 ## Model
 
 The `ts_data_groups_approx_2_epoch285` model is shipped with this repository for testing.
-Any other PyTorch model can be used, it will just need to be converted using the `create_torchscript_model.py` script from the `uml_picture_d` repository.
+Any other PyTorch model can be used, it will just need to be converted using the `export_model.py` script from the `uml_picture_d` repository.
+Under the hood, this is using the `torch.jit.trace` function to convert the PyTorch model to a TorchScript model.
 
 ### Normalization
 
