@@ -16,3 +16,4 @@ Used to run python PyTorch models that were converted to ONNX via the `torch.onn
 ## Models
 
 The models shared between the two folders.
+Any other PyTorch model can be used, it will just need to be converted using the `export_model.py` script from the `uml_picture_d` repository.
