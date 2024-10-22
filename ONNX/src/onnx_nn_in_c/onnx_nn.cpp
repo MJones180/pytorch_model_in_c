@@ -4,13 +4,12 @@ void NN_Model::load_model() {
     std::string file_path = model_dir_path + "/model.onnx";
     try {
 
+        // https://github.com/microsoft/onnxruntime/issues/4131#issuecomment-682796289
         Ort::SessionOptions session_options{nullptr};
-        auto envLocal =
-            std::make_unique<Ort::Env>(ORT_LOGGING_LEVEL_WARNING, "test");
-        env = std::move(envLocal);
-        auto sessionLocal = std::make_unique<Ort::Session>(
-            *env, file_path.c_str(), session_options);
-        session = std::move(sessionLocal);
+        onnx_env = std::move(
+            std::make_unique<Ort::Env>(ORT_LOGGING_LEVEL_WARNING, "onnx_nn"));
+        onnx_session = std::move(std::make_unique<Ort::Session>(
+            *onnx_env, file_path.c_str(), session_options));
 
     } catch (const std::exception& e) {
         std::cerr << "error loading in the model\n";
@@ -60,17 +59,15 @@ double* NN_Model::model_inference(double data[IPS][IPS]) {
     // Code for doing this taken from
     // https://github.com/microsoft/onnxruntime-inference-examples/blob/main/c_cxx/model-explorer/model-explorer.cpp
 
-    // print name/shape of inputs
-    Ort::AllocatorWithDefaultOptions allocator;
-
     std::vector<std::string> input_names(
-        {session->GetInputNameAllocated(0, allocator).get()});
-    std::vector<std::int64_t> input_shapes(
-        {session->GetInputTypeInfo(0).GetTensorTypeAndShapeInfo().GetShape()});
+        {onnx_session->GetInputNameAllocated(0, onnx_allocator).get()});
+    std::vector<std::int64_t> input_shapes({onnx_session->GetInputTypeInfo(0)
+                                                .GetTensorTypeAndShapeInfo()
+                                                .GetShape()});
 
     // print name/shape of outputs
     std::vector<std::string> output_names(
-        {session->GetOutputNameAllocated(0, allocator).get()});
+        {onnx_session->GetOutputNameAllocated(0, onnx_allocator).get()});
 
     float data_as_float_flattened[IPS * IPS];
     for (int i = 0; i < IPS; i++)
@@ -99,10 +96,10 @@ double* NN_Model::model_inference(double data[IPS][IPS]) {
                    [&](const std::string& str) { return str.c_str(); });
 
     try {
-        std::vector<Ort::Value> output_tensors =
-            session->Run(Ort::RunOptions{nullptr}, input_names_char.data(),
-                         input_tensors.data(), input_names_char.size(),
-                         output_names_char.data(), output_names_char.size());
+        std::vector<Ort::Value> output_tensors = onnx_session->Run(
+            Ort::RunOptions{nullptr}, input_names_char.data(),
+            input_tensors.data(), input_names_char.size(),
+            output_names_char.data(), output_names_char.size());
 
         // float* arr = output_tensors.front().GetTensorMutableData<float>();
         float* arr = output_tensors[0].GetTensorMutableData<float>();

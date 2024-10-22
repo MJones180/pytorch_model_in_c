@@ -14,8 +14,9 @@ class NN_Model {
     std::string model_dir_path;
 
     // https://github.com/microsoft/onnxruntime/issues/4131#issuecomment-682796289
-    std::unique_ptr<Ort::Env> env = nullptr;
-    std::unique_ptr<Ort::Session> session = nullptr;
+    std::unique_ptr<Ort::Env> onnx_env = nullptr;
+    std::unique_ptr<Ort::Session> onnx_session = nullptr;
+    Ort::AllocatorWithDefaultOptions onnx_allocator;
 
     // The base field that should be subtracted off
     double base_field[IPS][IPS];
