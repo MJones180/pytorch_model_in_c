@@ -1,14 +1,5 @@
 #include <onnx_nn.h>
 
-#include <algorithm> // std::generate
-#include <cassert>
-#include <cstddef>
-#include <cstdint>
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <vector>
-
 void NN_Model::load_model() {
     std::string file_path = model_dir_path + "/model.onnx";
     try {
@@ -65,20 +56,6 @@ NN_Model::NN_Model(std::string model_path) {
     load_norm_data();
 }
 
-// ========================================================
-
-template <typename T>
-Ort::Value vec_to_tensor(std::vector<T>& data,
-                         const std::vector<std::int64_t>& shape) {
-    Ort::MemoryInfo mem_info = Ort::MemoryInfo::CreateCpu(
-        OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault);
-    auto tensor = Ort::Value::CreateTensor<T>(
-        mem_info, data.data(), data.size(), shape.data(), shape.size());
-    return tensor;
-}
-
-// ========================================================
-
 double* NN_Model::model_inference(double data[IPS][IPS]) {
     // Code for doing this taken from
     // https://github.com/microsoft/onnxruntime-inference-examples/blob/main/c_cxx/model-explorer/model-explorer.cpp
@@ -104,8 +81,11 @@ double* NN_Model::model_inference(double data[IPS][IPS]) {
                                            std::end(data_as_float_flattened));
     std::vector<Ort::Value> input_tensors;
 
-    input_tensors.emplace_back(
-        vec_to_tensor<float>(input_tensor_values, input_shapes));
+    Ort::MemoryInfo mem_info = Ort::MemoryInfo::CreateCpu(
+        OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault);
+    input_tensors.emplace_back(Ort::Value::CreateTensor<float>(
+        mem_info, input_tensor_values.data(), input_tensor_values.size(),
+        input_shapes.data(), input_shapes.size()));
 
     // pass data through model
     std::vector<const char*> input_names_char(input_names.size(), nullptr);

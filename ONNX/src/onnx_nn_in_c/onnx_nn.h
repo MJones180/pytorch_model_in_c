@@ -2,11 +2,13 @@
 #define ONNX_NN_H
 
 #include <constants.h>
+#include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <memory>
 #include <onnxruntime_cxx_api.h>
 #include <string>
+#include <vector>
 
 class NN_Model {
     std::string model_dir_path;
