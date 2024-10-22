@@ -7,6 +7,8 @@ include_directories(${PROJECT_SOURCE_DIR}/src/)
 include_directories(${PROJECT_SOURCE_DIR}/src/onnx_nn_in_c/)
 
 include_directories("${ONNXRUNTIME_ROOTDIR}")
+# Makes it so that we can import onnxruntime_cxx_api.h
+include_directories("${ONNXRUNTIME_ROOTDIR}/include")
 link_directories("${ONNXRUNTIME_ROOTDIR}/lib")
 
 add_library(
