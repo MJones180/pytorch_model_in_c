@@ -2,9 +2,10 @@
 
 ## Installation
 
-This runs an ONNX model using the ONNX Runtime C library.
+This runs an ONNX model using the ONNX Runtime library.
+The library is used from within C++ (with a C wrapper), but can also be used directly from C.
 
-First, the C `onnxruntime` library must be downloaded ( https://onnxruntime.ai/getting-started ).
+First, the C/C++ `onnxruntime` library must be downloaded ( https://onnxruntime.ai/getting-started ).
 Once this is downloaded, it must be unzipped and placed at `./libraries/onnxruntime`.
 
 Next, CMake must be installed to build everything.
