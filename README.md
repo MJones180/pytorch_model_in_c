@@ -12,3 +12,7 @@ Used to run python PyTorch models that were converted to TorchScript via the `to
 
 C code that uses the ONNX runtime library.
 Used to run python PyTorch models that were converted to ONNX via the `torch.onnx.export` function.
+
+## Models
+
+The models shared between the two folders.
