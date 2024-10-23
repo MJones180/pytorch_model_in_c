@@ -9,6 +9,7 @@ extern "C" {
 
 void load_model(const char* model_path);
 double* run_zernike_model(double input_pixels[IPS][IPS]);
+void close_model();
 
 #ifdef __cplusplus
 }

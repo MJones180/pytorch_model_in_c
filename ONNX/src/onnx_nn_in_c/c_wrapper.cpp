@@ -17,6 +17,8 @@ double* run_zernike_model(double input_pixels[IPS][IPS]) {
     return NN_Model_instance->run_zernike_model(input_pixels);
 }
 
+void close_model() { delete NN_Model_instance; }
+
 #ifdef __cplusplus
 }
 #endif

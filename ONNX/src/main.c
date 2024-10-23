@@ -79,4 +79,10 @@ int main(int argc, const char* argv[]) {
     double total_time =
         end.tv_sec + end.tv_usec / 1e6 - start.tv_sec - start.tv_usec / 1e6;
     printf("Average time per iteration: %f seconds\n", total_time / iterations);
+
+    // =========================================================================
+    // Close the model
+    // =========================================================================
+    close_model();
+    printf("Model closed");
 }

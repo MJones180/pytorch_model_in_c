@@ -49,6 +49,7 @@ class NN_Model {
   public:
     NN_Model(std::string model_path);
     double* run_zernike_model(double input_pixels[IPS][IPS]);
+    ~NN_Model(){};
 };
 
 #endif
