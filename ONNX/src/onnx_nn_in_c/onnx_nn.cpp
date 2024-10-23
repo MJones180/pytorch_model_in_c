@@ -2,23 +2,15 @@
 
 void NN_Model::load_model() {
     std::string file_path = model_dir_path + "/model.onnx";
+    onnx_env = std::move(
+        std::make_unique<Ort::Env>(ORT_LOGGING_LEVEL_WARNING, "onnx_nn"));
     try {
-
-        // https://github.com/microsoft/onnxruntime/issues/4131#issuecomment-682796289
-        Ort::SessionOptions session_options{nullptr};
-        onnx_env = std::move(
-            std::make_unique<Ort::Env>(ORT_LOGGING_LEVEL_WARNING, "onnx_nn"));
         onnx_session = std::move(std::make_unique<Ort::Session>(
-            *onnx_env, file_path.c_str(), session_options));
-
+            *onnx_env, file_path.c_str(), onnx_session_options));
     } catch (const std::exception& e) {
         std::cerr << "error loading in the model\n";
     }
     std::cout << "Model loaded from: " << file_path << "\n";
-
-    input_shapes = onnx_session->GetInputTypeInfo(0)
-                       .GetTensorTypeAndShapeInfo()
-                       .GetShape();
 }
 
 void NN_Model::load_base_field() {
@@ -72,15 +64,15 @@ double* NN_Model::model_inference(double data[IPS][IPS]) {
     std::vector<float> input_tensor_values(std::begin(data_as_float_flattened),
                                            std::end(data_as_float_flattened));
 
-    input_tensors.emplace_back(Ort::Value::CreateTensor<float>(
-        mem_info, input_tensor_values.data(), input_tensor_values.size(),
-        input_shapes.data(), input_shapes.size()));
+    onnx_input_tensor.emplace_back(Ort::Value::CreateTensor<float>(
+        onnx_mem_info, input_tensor_values.data(), input_tensor_values.size(),
+        onnx_input_shape.data(), onnx_input_shape.size()));
 
     try {
-        std::vector<Ort::Value> output_tensors = onnx_session->Run(
-            Ort::RunOptions{nullptr}, input_names_char.data(),
-            input_tensors.data(), input_names_char.size(),
-            output_names_char.data(), output_names_char.size());
+        std::vector<Ort::Value> output_tensors =
+            onnx_session->Run(Ort::RunOptions{nullptr}, onnx_input_name.data(),
+                              onnx_input_tensor.data(), onnx_input_name.size(),
+                              onnx_output_name.data(), onnx_output_name.size());
 
         float* arr = output_tensors[0].GetTensorMutableData<float>();
 
