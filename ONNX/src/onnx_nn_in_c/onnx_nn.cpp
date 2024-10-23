@@ -2,12 +2,11 @@
 
 void NN_Model::load_model() {
     std::string file_path = model_dir_path + "/model.onnx";
-    // https://github.com/microsoft/onnxruntime/issues/4131#issuecomment-682796289
-    onnx_env = std::move(
-        std::make_unique<Ort::Env>(ORT_LOGGING_LEVEL_WARNING, "onnx_nn"));
+    Ort::Env onnx_env(OrtLoggingLevel::ORT_LOGGING_LEVEL_WARNING, "onnx_nn");
     try {
+        // https://github.com/microsoft/onnxruntime/issues/4131#issuecomment-682796289
         onnx_session = std::move(std::make_unique<Ort::Session>(
-            *onnx_env, file_path.c_str(), onnx_session_options));
+            onnx_env, file_path.c_str(), Ort::SessionOptions{nullptr}));
     } catch (const std::exception& e) {
         std::cerr << "error loading in the model\n";
         exit(-1);
@@ -73,7 +72,7 @@ double* NN_Model::model_inference(double data[IPS][IPS]) {
     try {
         float* model_output =
             onnx_session
-                ->Run(onnx_run_options, onnx_input_name.data(),
+                ->Run(Ort::RunOptions{nullptr}, onnx_input_name.data(),
                       input_tensor.data(), onnx_input_name.size(),
                       onnx_output_name.data(), onnx_output_name.size())[0]
                 .GetTensorMutableData<float>();
