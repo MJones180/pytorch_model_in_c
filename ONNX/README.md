@@ -32,6 +32,9 @@ The `exported_data_groups_approx_2_epoch285` model is shipped with this repo for
 Any other PyTorch model can be used, it will just need to be converted using the `export_model.py` script from the `uml_picture_d` repository.
 Under the hood, this is using the `torch.onnx.export` function to convert the PyTorch model to an ONNX model.
 
+For this code, it is required that the model only takes one input array and one output array.
+The names and sizes of these arrays can be found in the `constants.h` file.
+
 ### Normalization
 
 For the normalization data, there should be a single value for all inputs and each output should have its own value.

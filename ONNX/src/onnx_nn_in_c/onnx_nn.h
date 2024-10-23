@@ -16,7 +16,15 @@ class NN_Model {
     // https://github.com/microsoft/onnxruntime/issues/4131#issuecomment-682796289
     std::unique_ptr<Ort::Env> onnx_env = nullptr;
     std::unique_ptr<Ort::Session> onnx_session = nullptr;
-    Ort::AllocatorWithDefaultOptions onnx_allocator;
+
+    Ort::MemoryInfo mem_info = Ort::MemoryInfo::CreateCpu(
+        OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault);
+
+    std::vector<std::int64_t> input_shapes;
+    std::vector<Ort::Value> input_tensors;
+
+    std::vector<const char*> input_names_char = {NN_INPUT_NAME};
+    std::vector<const char*> output_names_char = {NN_OUTPUT_NAME};
 
     // The base field that should be subtracted off
     double base_field[IPS][IPS];

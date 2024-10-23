@@ -15,6 +15,10 @@ void NN_Model::load_model() {
         std::cerr << "error loading in the model\n";
     }
     std::cout << "Model loaded from: " << file_path << "\n";
+
+    input_shapes = onnx_session->GetInputTypeInfo(0)
+                       .GetTensorTypeAndShapeInfo()
+                       .GetShape();
 }
 
 void NN_Model::load_base_field() {
@@ -50,6 +54,7 @@ void NN_Model::load_norm_data() {
 
 NN_Model::NN_Model(std::string model_path) {
     model_dir_path = model_path;
+    int pi_integer = 3;
     load_model();
     load_base_field();
     load_norm_data();
@@ -59,41 +64,17 @@ double* NN_Model::model_inference(double data[IPS][IPS]) {
     // Code for doing this taken from
     // https://github.com/microsoft/onnxruntime-inference-examples/blob/main/c_cxx/model-explorer/model-explorer.cpp
 
-    std::vector<std::string> input_names(
-        {onnx_session->GetInputNameAllocated(0, onnx_allocator).get()});
-    std::vector<std::int64_t> input_shapes({onnx_session->GetInputTypeInfo(0)
-                                                .GetTensorTypeAndShapeInfo()
-                                                .GetShape()});
-
-    // print name/shape of outputs
-    std::vector<std::string> output_names(
-        {onnx_session->GetOutputNameAllocated(0, onnx_allocator).get()});
-
-    float data_as_float_flattened[IPS * IPS];
+    float data_as_float_flattened[IPS2];
     for (int i = 0; i < IPS; i++)
         for (int j = 0; j < IPS; j++)
             data_as_float_flattened[i * IPS + j] = (float)data[i][j];
 
     std::vector<float> input_tensor_values(std::begin(data_as_float_flattened),
                                            std::end(data_as_float_flattened));
-    std::vector<Ort::Value> input_tensors;
 
-    Ort::MemoryInfo mem_info = Ort::MemoryInfo::CreateCpu(
-        OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault);
     input_tensors.emplace_back(Ort::Value::CreateTensor<float>(
         mem_info, input_tensor_values.data(), input_tensor_values.size(),
         input_shapes.data(), input_shapes.size()));
-
-    // pass data through model
-    std::vector<const char*> input_names_char(input_names.size(), nullptr);
-    std::transform(std::begin(input_names), std::end(input_names),
-                   std::begin(input_names_char),
-                   [&](const std::string& str) { return str.c_str(); });
-
-    std::vector<const char*> output_names_char(output_names.size(), nullptr);
-    std::transform(std::begin(output_names), std::end(output_names),
-                   std::begin(output_names_char),
-                   [&](const std::string& str) { return str.c_str(); });
 
     try {
         std::vector<Ort::Value> output_tensors = onnx_session->Run(
@@ -101,7 +82,6 @@ double* NN_Model::model_inference(double data[IPS][IPS]) {
             input_tensors.data(), input_names_char.size(),
             output_names_char.data(), output_names_char.size());
 
-        // float* arr = output_tensors.front().GetTensorMutableData<float>();
         float* arr = output_tensors[0].GetTensorMutableData<float>();
 
         // We cannot allocate the array locally, instead we need to dynamically
@@ -143,7 +123,7 @@ double* NN_Model::run_zernike_model(double input_pixels[IPS][IPS]) {
     // Create a copy of the data so that the original is not mutated.
     // This function only accepts one row of data at a time (hence being 2D).
     double data_copy[IPS][IPS];
-    std::memcpy(data_copy, input_pixels, sizeof(double) * IPS * IPS);
+    std::memcpy(data_copy, input_pixels, sizeof(double) * IPS2);
     // Pre-processing steps.
     subtract_base_field(data_copy); // Subtract off the base field
     normalize(data_copy);           // Normalize the data between -1 and 1
