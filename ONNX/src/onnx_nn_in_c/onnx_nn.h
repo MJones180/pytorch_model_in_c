@@ -12,21 +12,17 @@
 
 class NN_Model {
     std::string model_dir_path;
-
     // https://github.com/microsoft/onnxruntime/issues/4131#issuecomment-682796289
-    Ort::SessionOptions onnx_session_options{nullptr};
     std::unique_ptr<Ort::Env> onnx_env = nullptr;
     std::unique_ptr<Ort::Session> onnx_session = nullptr;
-
+    Ort::SessionOptions onnx_session_options{nullptr};
+    Ort::RunOptions onnx_run_options{nullptr};
+    // Variables that are needed to run the model
     Ort::MemoryInfo onnx_mem_info = Ort::MemoryInfo::CreateCpu(
         OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault);
-
     std::vector<std::int64_t> onnx_input_shape = {1, 1, IPS, IPS};
     std::vector<const char*> onnx_input_name = {NN_INPUT_NAME};
     std::vector<const char*> onnx_output_name = {NN_OUTPUT_NAME};
-
-    std::vector<Ort::Value> onnx_input_tensor;
-
     // The base field that should be subtracted off
     double base_field[IPS][IPS];
     // There should be a single value for all inputs.

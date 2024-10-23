@@ -2,6 +2,7 @@
 
 void NN_Model::load_model() {
     std::string file_path = model_dir_path + "/model.onnx";
+    // https://github.com/microsoft/onnxruntime/issues/4131#issuecomment-682796289
     onnx_env = std::move(
         std::make_unique<Ort::Env>(ORT_LOGGING_LEVEL_WARNING, "onnx_nn"));
     try {
@@ -9,6 +10,7 @@ void NN_Model::load_model() {
             *onnx_env, file_path.c_str(), onnx_session_options));
     } catch (const std::exception& e) {
         std::cerr << "error loading in the model\n";
+        exit(-1);
     }
     std::cout << "Model loaded from: " << file_path << "\n";
 }
@@ -17,8 +19,10 @@ void NN_Model::load_base_field() {
     std::string file_path = model_dir_path + "/base_field.txt";
     std::ifstream fs;
     fs.open(file_path);
-    if (!fs)
+    if (!fs) {
         std::cerr << "error loading in the base field\n";
+        exit(-1);
+    }
     std::cout << "Base field loaded from: " << file_path << "\n";
     for (int i = 0; i < IPS; i++)
         for (int j = 0; j < IPS; j++)
@@ -30,8 +34,10 @@ void NN_Model::load_norm_data() {
     std::string file_path = model_dir_path + "/norm_data.txt";
     std::ifstream fs;
     fs.open(file_path);
-    if (!fs)
+    if (!fs) {
         std::cerr << "error loading in the norm data\n";
+        exit(-1);
+    }
     std::cout << "Norm data loaded from: " << file_path << "\n";
     // First two lines are input norm data.
     fs >> input_mmd;
@@ -46,47 +52,40 @@ void NN_Model::load_norm_data() {
 
 NN_Model::NN_Model(std::string model_path) {
     model_dir_path = model_path;
-    int pi_integer = 3;
     load_model();
     load_base_field();
     load_norm_data();
 }
 
 double* NN_Model::model_inference(double data[IPS][IPS]) {
-    // Code for doing this taken from
-    // https://github.com/microsoft/onnxruntime-inference-examples/blob/main/c_cxx/model-explorer/model-explorer.cpp
-
-    float data_as_float_flattened[IPS2];
+    // Code outline for doing this taken from the example located at:
+    //     github.com/microsoft/onnxruntime-inference-examples/blob/main/c_cxx/model-explorer/model-explorer.cpp
+    // The data needs to be converted to a flattened 1D vector of floats.
+    std::vector<float> flat_float_data;
     for (int i = 0; i < IPS; i++)
         for (int j = 0; j < IPS; j++)
-            data_as_float_flattened[i * IPS + j] = (float)data[i][j];
-
-    std::vector<float> input_tensor_values(std::begin(data_as_float_flattened),
-                                           std::end(data_as_float_flattened));
-
-    onnx_input_tensor.emplace_back(Ort::Value::CreateTensor<float>(
-        onnx_mem_info, input_tensor_values.data(), input_tensor_values.size(),
+            flat_float_data.push_back((float)data[i][j]);
+    // The data needs to be converted to the type Value
+    std::vector<Ort::Value> input_tensor;
+    input_tensor.emplace_back(Ort::Value::CreateTensor<float>(
+        onnx_mem_info, flat_float_data.data(), flat_float_data.size(),
         onnx_input_shape.data(), onnx_input_shape.size()));
-
     try {
-        std::vector<Ort::Value> output_tensors =
-            onnx_session->Run(Ort::RunOptions{nullptr}, onnx_input_name.data(),
-                              onnx_input_tensor.data(), onnx_input_name.size(),
-                              onnx_output_name.data(), onnx_output_name.size());
-
-        float* arr = output_tensors[0].GetTensorMutableData<float>();
-
+        float* model_output =
+            onnx_session
+                ->Run(onnx_run_options, onnx_input_name.data(),
+                      input_tensor.data(), onnx_input_name.size(),
+                      onnx_output_name.data(), onnx_output_name.size())[0]
+                .GetTensorMutableData<float>();
         // We cannot allocate the array locally, instead we need to dynamically
         // allocate the array memory. (https://stackoverflow.com/a/36784891)
-        double* output_cpp = new double[OVS];
+        double* output_double = new double[OVS];
         // The values should be returned as type double, not float.
         for (int i = 0; i < OVS; i++)
-            output_cpp[i] = arr[i];
-        return output_cpp;
-
+            output_double[i] = model_output[i];
+        return output_double;
     } catch (const Ort::Exception& exception) {
-        std::cout << "ERROR running model inference: " << exception.what()
-                  << std::endl;
+        std::cerr << "error running the model: " << exception.what() << "\n";
         exit(-1);
     }
 }
