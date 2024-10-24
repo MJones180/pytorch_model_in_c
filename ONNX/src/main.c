@@ -5,11 +5,12 @@
 #include <string.h>
 #include <strings.h>
 #include <sys/time.h>
+#include <time.h>
 
 // Actions that can be done in this script
 static const char VALIDATE_OUTPUTS[] = "validate_outputs";
-static const char BENCHMARK_1[] = "benchmark_1";
-static const char BENCHMARK_2[] = "benchmark_2";
+static const char BENCHMARK_ITER_COUNT[] = "benchmark_iter_count";
+static const char BENCHMARK_FREQ[] = "benchmark_freq";
 
 // Concat two strings (https://stackoverflow.com/a/8465083).
 char* concat(const char* s1, const char* s2) {
@@ -17,6 +18,13 @@ char* concat(const char* s1, const char* s2) {
     char* concat_str = malloc(size);
     snprintf(concat_str, size, "%s%s", s1, s2);
     return concat_str;
+}
+
+// Grab the current time (https://stackoverflow.com/a/55346612)
+double get_current_time() {
+    struct timeval current_time_val;
+    gettimeofday(&current_time_val, NULL);
+    return current_time_val.tv_sec + current_time_val.tv_usec / 1e6;
 }
 
 // A function to pretty print the steps.
@@ -35,7 +43,7 @@ int verify_args(int arg_count, const char* args[]) {
     char usage_str[256];
     snprintf(usage_str, sizeof(usage_str),
              "%s <action> ...\nValid actions: %s, %s, %s\n", base_str,
-             VALIDATE_OUTPUTS, BENCHMARK_1, BENCHMARK_2);
+             VALIDATE_OUTPUTS, BENCHMARK_ITER_COUNT, BENCHMARK_FREQ);
     // The minimum number of arguments that must be passed (model path and
     // action to perform)
     int min_arg_count = 3;
@@ -50,15 +58,16 @@ int verify_args(int arg_count, const char* args[]) {
             fprintf(stderr, "%s %s\n", base_str, VALIDATE_OUTPUTS);
             return -1;
         }
-    } else if (str_match(action, BENCHMARK_1)) {
+    } else if (str_match(action, BENCHMARK_ITER_COUNT)) {
         if (arg_count != min_arg_count + 1) {
-            fprintf(stderr, "%s %s <iterations>\n", base_str, BENCHMARK_1);
+            fprintf(stderr, "%s %s <iterations>\n", base_str,
+                    BENCHMARK_ITER_COUNT);
             return -1;
         }
-    } else if (str_match(action, BENCHMARK_2)) {
+    } else if (str_match(action, BENCHMARK_FREQ)) {
         if (arg_count != min_arg_count + 2) {
-            fprintf(stderr, "%s %s <calling frequency (Hz)> <total time>\n",
-                    base_str, BENCHMARK_2);
+            fprintf(stderr, "%s %s <total time (s)> <frequency (Hz)>\n",
+                    base_str, BENCHMARK_FREQ);
             return -1;
         }
     } else {
@@ -111,12 +120,12 @@ int main(int argc, const char* argv[]) {
         // =========================================================================
         print_step("Calling the model to verify its outputs");
         double* model_output = run_zernike_model(inputs);
-        printf("Python Model Output, C++ Model Output\n");
+        printf("PyTorch Model Output, C ONNX Model Output\n");
         for (int i = 0; i < OVS; i++)
             printf("%.16f, %.16f\n", *(python_output + i), *(model_output + i));
     }
 
-    if (str_match(action, BENCHMARK_1)) {
+    if (str_match(action, BENCHMARK_ITER_COUNT)) {
         // =========================================================================
         // Run the model benchmark (one row at a time).
         // =========================================================================
@@ -124,47 +133,57 @@ int main(int argc, const char* argv[]) {
         // Grab the number of iterations from the CLI command.
         int iterations = strtol(argv[3], NULL, 10);
         printf("Using %d iterations\n", iterations);
-        // Grab the real time elapsed by running all the iterations
-        // (https://stackoverflow.com/a/55346612).
-        struct timeval start, end;
-        gettimeofday(&start, NULL);
+        double start = get_current_time();
         for (int i = 0; i < iterations; i++)
             run_zernike_model(inputs);
-        gettimeofday(&end, NULL);
-        double total_time =
-            end.tv_sec + end.tv_usec / 1e6 - start.tv_sec - start.tv_usec / 1e6;
-        printf("Average time per iteration: %f seconds\n",
-               total_time / iterations);
+        double average_time = (get_current_time() - start) / iterations;
+        printf("Average time per iteration: %f seconds\n", average_time);
     }
 
-    if (str_match(action, BENCHMARK_2)) {
+    if (str_match(action, BENCHMARK_FREQ)) {
         // =========================================================================
-        // Run the model benchmark (one row at a time).
+        // Run the model benchmark (at a given frequency).
         // =========================================================================
         print_step("Benchmarking the model's performance");
         // Grab the number of iterations from the CLI command.
-        int iterations = strtol(argv[3], NULL, 10);
-        int calling_frequency = strtol(argv[4], NULL, 10);
-        float calling_period = (float)1 / calling_frequency;
-        printf("Using %d iterations\n", iterations);
-        printf("Using %d frequency (Hz)\n", calling_frequency);
-        printf("Using %f period (s)\n", calling_period);
-        // Grab the real time elapsed by running all the iterations
-        // (https://stackoverflow.com/a/55346612).
-        struct timeval start, end;
-        gettimeofday(&start, NULL);
-        for (int i = 0; i < iterations; i++)
+        int total_time = strtol(argv[3], NULL, 10);
+        int frequency = strtol(argv[4], NULL, 10);
+        double period = (double)1 / frequency;
+        printf("Total Time (s): %i\n", total_time);
+        printf("Frequency (Hz): %d\n", frequency);
+        printf("Period (s): %f\n", period);
+        double start_time = get_current_time();
+        double end_time = get_current_time() + total_time;
+        double current_time = get_current_time();
+        int total_model_calls = 0;
+        double total_compute_time = 0;
+        double total_sleep_time = 0;
+        while (current_time < end_time) {
+            double compute_start = get_current_time();
             run_zernike_model(inputs);
-        gettimeofday(&end, NULL);
-        double total_time =
-            end.tv_sec + end.tv_usec / 1e6 - start.tv_sec - start.tv_usec / 1e6;
+            total_model_calls += 1;
+            double compute_time = get_current_time() - compute_start;
+            total_compute_time += compute_time;
+            double sleep_time = period - compute_time;
+            total_sleep_time += sleep_time;
+            // https://stackoverflow.com/a/7684399
+            nanosleep((const struct timespec[]){{0, sleep_time * 1e9}}, NULL);
+            current_time = get_current_time();
+        }
+        double actual_total_time = get_current_time() - start_time;
+        printf("Total actual time: %f\n", actual_total_time);
+        printf("Total time accounted for: %f\n",
+               total_compute_time + total_sleep_time);
+        printf("Total model calls: %d\n", total_model_calls);
+        printf("Total model call time: %f\n", total_compute_time);
+        printf("Total sleep time: %f\n", total_sleep_time);
         printf("Average time per iteration: %f seconds\n",
-               total_time / iterations);
+               total_compute_time / total_model_calls);
     }
 
     // =========================================================================
     // Close the model
     // =========================================================================
+    print_step("Closing the model");
     close_model();
-    print_step("Model closed");
 }
