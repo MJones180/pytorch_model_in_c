@@ -18,5 +18,5 @@ cmake -DONNXRUNTIME_ROOTDIR=${ONNXRUNTIME_ROOTDIR} ..;
 # Build the project
 cmake --build .;
 
-# Run a test to ensure everything works (use only 1 core)
-time taskset --cpu-list 1 ./main ../../models/exported_data_groups_approx_2_epoch285 1;
+# Run a test to ensure everything works
+./main ../../models/exported_data_groups_approx_2_epoch285 VALIDATE_OUTPUTS;

@@ -1,0 +1,2 @@
+Verify that the model outputs the correct values:
+    ./main ../../models/exported_data_groups_approx_2_epoch285 VALIDATE_OUTPUTS;

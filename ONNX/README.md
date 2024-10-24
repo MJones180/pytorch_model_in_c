@@ -17,18 +17,22 @@ This script contains the absolute path to the `onnxruntime` library.
 
 # Inference
 
-The executable can be run by using the following two commands:
+The executable can be run from the `build` directory (`cd build`).
 
-    cd build;
-    # Uses only 1 core
-    taskset --cpu-list 1 ./main ../../models/exported_data_groups_approx_2_epoch285 5000;
+The main script (`main`) can be run using the following signature:
 
-Note: if multiple cores can be used, then it should be `taskset --cpu-list 1,2,...`.
-The commands above are also run by the `run_build.zsh` script to ensure everything is working properly.
+    ./main ../../models/<model> <action>;
+
+On some machines, the number of cores can be capped by adding `taskset` at the start of the command:
+
+    # Uses only 2 cores
+    taskset --cpu-list 1,2 ./main ../../models/<model> <action>;
+
+Example commands can be found in the `example_commands.txt`.
 
 ## Model
 
-The `exported_data_groups_approx_2_epoch285` model is shipped with this repo for testing.
+The `exported_data_groups_approx_2_epoch285` and `exported_inference_speedup_v2_1_epoch325` models are shipped with this repo for testing.
 Any other PyTorch model can be used, it will just need to be converted using the `export_model.py` script from the `uml_picture_d` repository.
 Under the hood, this is using the `torch.onnx.export` function to convert the PyTorch model to an ONNX model.
 
