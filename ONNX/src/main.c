@@ -1,3 +1,6 @@
+// This define removes the nanosleep warning
+// https://stackoverflow.com/a/55860234
+#define _POSIX_C_SOURCE 199309L
 #include <c_wrapper.h>
 #include <constants.h>
 #include <stdio.h>
@@ -164,20 +167,22 @@ int main(int argc, const char* argv[]) {
             total_model_calls += 1;
             double compute_time = get_current_time() - compute_start;
             total_compute_time += compute_time;
-            double sleep_time = period - compute_time;
-            total_sleep_time += sleep_time;
+            // Must be in nanoseconds
+            double target_sleep_time = (period - compute_time) * 1e9;
+            double sleep_start = get_current_time();
             // https://stackoverflow.com/a/7684399
-            nanosleep((const struct timespec[]){{0, sleep_time * 1e9}}, NULL);
+            nanosleep((const struct timespec[]){{0, target_sleep_time}}, NULL);
             current_time = get_current_time();
+            total_sleep_time += current_time - sleep_start;
         }
-        double actual_total_time = get_current_time() - start_time;
-        printf("Total actual time: %f\n", actual_total_time);
-        printf("Total time accounted for: %f\n",
-               total_compute_time + total_sleep_time);
+        double total_time_actual = get_current_time() - start_time;
+        double total_time_accounted = total_compute_time + total_sleep_time;
+        printf("Total actual time: %f\n", total_time_actual);
+        printf("Total time accounted for: %f\n", total_time_accounted);
         printf("Total model calls: %d\n", total_model_calls);
         printf("Total model call time: %f\n", total_compute_time);
         printf("Total sleep time: %f\n", total_sleep_time);
-        printf("Average time per iteration: %f seconds\n",
+        printf("Average time per model call: %f seconds\n",
                total_compute_time / total_model_calls);
     }
 
