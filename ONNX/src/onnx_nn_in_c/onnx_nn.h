@@ -31,7 +31,7 @@ class NN_Model {
 
   private:
     // Functions that will be called by the constructor to get things set up
-    void load_model();
+    void load_model(int core_count);
     void load_base_field();
     void load_norm_data();
 
@@ -44,7 +44,7 @@ class NN_Model {
     void denormalize(double* data);
 
   public:
-    NN_Model(std::string model_path);
+    NN_Model(std::string model_path, int core_count);
     double* run_zernike_model(double input_pixels[IPS][IPS]);
     ~NN_Model(){};
 };

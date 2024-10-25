@@ -14,6 +14,12 @@
 static const char VALIDATE_OUTPUTS[] = "validate_outputs";
 static const char BENCHMARK_ITER_COUNT[] = "benchmark_iter_count";
 static const char BENCHMARK_FREQ[] = "benchmark_freq";
+// Indexes of parameters
+static const int IDX_MODEL_PATH = 1;
+static const int IDX_CORE_COUNT = 2;
+static const int IDX_ACTION = 3;
+// The minimum number of arguments that must be passed
+static const int IDX_MIN = IDX_ACTION + 1;
 
 // Concat two strings (https://stackoverflow.com/a/8465083).
 char* concat(const char* s1, const char* s2) {
@@ -40,35 +46,32 @@ int str_match(const char* str_1, const char* str_2) {
 
 int verify_args(int arg_count, const char* args[]) {
     // Every command will start with this
-    char* base_str = "Usage: main <path to model folder>";
+    char* base_str = "Usage: main <path to model folder> <core count> ";
     // The following is the usage message that is shown if no action or an
     // incorrect action is given
     char usage_str[256];
     snprintf(usage_str, sizeof(usage_str),
              "%s <action> ...\nValid actions: %s, %s, %s\n", base_str,
              VALIDATE_OUTPUTS, BENCHMARK_ITER_COUNT, BENCHMARK_FREQ);
-    // The minimum number of arguments that must be passed (model path and
-    // action to perform)
-    int min_arg_count = 3;
-    // Verify the model path and action are passed
-    if (arg_count < min_arg_count) {
+    // Verify the required parameters are passed
+    if (arg_count < IDX_MIN) {
         fprintf(stderr, "%s", usage_str);
         return -1;
     }
-    const char* action = args[2];
+    const char* action = args[IDX_ACTION];
     if (str_match(action, VALIDATE_OUTPUTS)) {
-        if (arg_count != min_arg_count) {
+        if (arg_count != IDX_MIN) {
             fprintf(stderr, "%s %s\n", base_str, VALIDATE_OUTPUTS);
             return -1;
         }
     } else if (str_match(action, BENCHMARK_ITER_COUNT)) {
-        if (arg_count != min_arg_count + 1) {
+        if (arg_count != IDX_MIN + 1) {
             fprintf(stderr, "%s %s <iterations>\n", base_str,
                     BENCHMARK_ITER_COUNT);
             return -1;
         }
     } else if (str_match(action, BENCHMARK_FREQ)) {
-        if (arg_count != min_arg_count + 2) {
+        if (arg_count != IDX_MIN + 2) {
             fprintf(stderr, "%s %s <total time (s)> <frequency (Hz)>\n",
                     base_str, BENCHMARK_FREQ);
             return -1;
@@ -83,8 +86,9 @@ int verify_args(int arg_count, const char* args[]) {
 int main(int argc, const char* argv[]) {
     if (verify_args(argc, argv) == -1)
         return -1;
-    const char* model_path = argv[1];
-    const char* action = argv[2];
+    const char* model_path = argv[IDX_MODEL_PATH];
+    int core_count = strtol(argv[IDX_CORE_COUNT], NULL, 10);
+    const char* action = argv[IDX_ACTION];
     printf("Model Path: %s\n", model_path);
     printf("Action: %s\n", action);
 
@@ -115,7 +119,7 @@ int main(int argc, const char* argv[]) {
     // Load in the model.
     // =========================================================================
     print_step("Loading in the model");
-    load_model(model_path);
+    load_model(model_path, core_count);
 
     if (str_match(action, VALIDATE_OUTPUTS)) {
         // =========================================================================
@@ -134,7 +138,7 @@ int main(int argc, const char* argv[]) {
         // =========================================================================
         print_step("Benchmarking the model's performance");
         // Grab the number of iterations from the CLI command.
-        int iterations = strtol(argv[3], NULL, 10);
+        int iterations = strtol(argv[4], NULL, 10);
         printf("Using %d iterations\n", iterations);
         double start = get_current_time();
         for (int i = 0; i < iterations; i++)
@@ -149,8 +153,8 @@ int main(int argc, const char* argv[]) {
         // =========================================================================
         print_step("Benchmarking the model's performance");
         // Grab the number of iterations from the CLI command.
-        int total_time = strtol(argv[3], NULL, 10);
-        int frequency = strtol(argv[4], NULL, 10);
+        int total_time = strtol(argv[4], NULL, 10);
+        int frequency = strtol(argv[5], NULL, 10);
         double period = (double)1 / frequency;
         printf("Total Time (s): %i\n", total_time);
         printf("Frequency (Hz): %d\n", frequency);

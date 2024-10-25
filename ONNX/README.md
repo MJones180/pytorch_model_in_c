@@ -21,12 +21,14 @@ The executable can be run from the `build` directory (`cd build`).
 
 The main script (`main`) can be run using the following signature:
 
-    ./main ../../models/<model> <action>;
+    ./main ../../models/<model> <core count> <action>;
+
+If a value of `0` is passed for the `core count`, then `ONNX Runtime` decides how many cores to use.
 
 On some machines, the number of cores can be capped by adding `taskset` at the start of the command:
 
     # Uses only 2 cores
-    taskset --cpu-list 1,2 ./main ../../models/<model> <action>;
+    taskset --cpu-list 1,2 ./main ../../models/<model> <core count> <action>;
 
 Example commands can be found in the `example_commands.txt`.
 

@@ -1,8 +1,11 @@
 Verify that the model outputs the correct values:
-    ./main ../../models/exported_data_groups_approx_2_epoch285 VALIDATE_OUTPUTS;
+    ./main ../../models/exported_data_groups_approx_2_epoch285 1 VALIDATE_OUTPUTS;
 
 Run 1,000 iterations back to back:
-    ./main ../../models/exported_data_groups_approx_2_epoch285 BENCHMARK_ITER_COUNT 1000;
+    # Single core
+    ./main ../../models/exported_data_groups_approx_2_epoch285 1 BENCHMARK_ITER_COUNT 1000;
+    # Let ONNX Runtime decide how many cores to use
+    ./main ../../models/exported_data_groups_approx_2_epoch285 0 BENCHMARK_ITER_COUNT 1000;
 
 Run iterations for 2 seconds with a frequency of 1 kHz.
-    ./main ../../models/exported_data_groups_approx_2_epoch285 BENCHMARK_FREQ 2 1000;
+    ./main ../../models/exported_data_groups_approx_2_epoch285 1 BENCHMARK_FREQ 2 1000;

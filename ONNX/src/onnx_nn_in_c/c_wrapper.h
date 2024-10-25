@@ -7,7 +7,7 @@ extern "C" {
 
 #include <constants.h>
 
-void load_model(const char* model_path);
+void load_model(const char* model_path, int core_count);
 double* run_zernike_model(double input_pixels[IPS][IPS]);
 void close_model();
 
