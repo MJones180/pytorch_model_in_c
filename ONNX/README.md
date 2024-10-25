@@ -53,11 +53,12 @@ Additionally, the model should have been trained on data that was normalized bet
 ## Timing
 
 Results are for 5,000 iterations of the models shipped with this repo.
-All timings were taken using an AMD Ryzen 9 7950X CPU (no GPU).
+All timings were taken using a single core on an AMD Ryzen 9 7950X CPU (no GPU).
 Additionally, all times reported are in milliseconds.
 
-- exported_data_groups_approx_2_epoch285: 0.24
-- exported_inference_speedup_v2_1_epoch325: 0.18
+- `exported_data_groups_approx_2_epoch285`: 1.1
+- `exported_inference_speedup_v2_1_epoch325`: 0.65
+- `exported_inference_speedup_v1_2_epoch267`: 0.31
 
 Note: total logical cores = physical cores * threads per core.
 Note: for some reason, using the `taskset --cpu-list ...` does not seem to work on all machines for the ONNX Runtime library.
