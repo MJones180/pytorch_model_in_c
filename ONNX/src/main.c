@@ -169,6 +169,13 @@ int main(int argc, const char* argv[]) {
             total_compute_time += compute_time;
             // Must be in nanoseconds
             double target_sleep_time = (period - compute_time) * 1e9;
+            // If the target sleep time is negative, then the model took longer
+            // than the frequency it is being called at
+            if (target_sleep_time < 0) {
+                fprintf(stderr, "Negative sleep time encountered (s): %f\n",
+                        target_sleep_time / 1e9);
+                return -1;
+            }
             double sleep_start = get_current_time();
             // https://stackoverflow.com/a/7684399
             nanosleep((const struct timespec[]){{0, target_sleep_time}}, NULL);
