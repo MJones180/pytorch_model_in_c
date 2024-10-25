@@ -32,7 +32,10 @@ Example commands can be found in the `example_commands.txt`.
 
 ## Model
 
-The `exported_data_groups_approx_2_epoch285` and `exported_inference_speedup_v2_1_epoch325` models are shipped with this repo for testing.
+The follow models are shipped with this repo for testing:
+- `exported_data_groups_approx_2_epoch285`: slowest and most accurate.
+- `exported_inference_speedup_v2_1_epoch325`: faster and a tiny bit less acurrate.
+- `exported_inference_speedup_v1_2_epoch267`: fastest and a tiny bit more less acurrate.
 Any other PyTorch model can be used, it will just need to be converted using the `export_model.py` script from the `uml_picture_d` repository.
 Under the hood, this is using the `torch.onnx.export` function to convert the PyTorch model to an ONNX model.
 
