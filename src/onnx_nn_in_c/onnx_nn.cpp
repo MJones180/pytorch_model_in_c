@@ -59,7 +59,7 @@ NN_Model::NN_Model(std::string model_path, int core_count) {
     load_norm_data();
 }
 
-double* NN_Model::model_inference(double data[IPS][IPS]) {
+float* NN_Model::model_inference(float data[IPS][IPS]) {
     // Code outline for doing this taken from the example located at:
     //     github.com/microsoft/onnxruntime-inference-examples/blob/main/c_cxx/model-explorer/model-explorer.cpp
     // The data needs to be converted to a flattened 1D vector of floats.
@@ -81,7 +81,7 @@ double* NN_Model::model_inference(double data[IPS][IPS]) {
                 .GetTensorMutableData<float>();
         // We cannot allocate the array locally, instead we need to dynamically
         // allocate the array memory. (https://stackoverflow.com/a/36784891)
-        double* output_double = new double[OVS];
+        float* output_double = new float[OVS];
         // The values should be returned as type double, not float.
         for (int i = 0; i < OVS; i++)
             output_double[i] = model_output[i];
@@ -92,36 +92,36 @@ double* NN_Model::model_inference(double data[IPS][IPS]) {
     }
 }
 
-void NN_Model::subtract_base_field(double data[IPS][IPS]) {
+void NN_Model::subtract_base_field(float data[IPS][IPS]) {
     // Subtract the base field off of each of the pixels.
     for (int i = 0; i < IPS; i++)
         for (int j = 0; j < IPS; j++)
             data[i][j] -= base_field[i][j];
 }
 
-void NN_Model::normalize(double data[IPS][IPS]) {
+void NN_Model::normalize(float data[IPS][IPS]) {
     // Normalize the data between -1 and 1.
     for (int i = 0; i < IPS; i++)
         for (int j = 0; j < IPS; j++)
             data[i][j] = 2 * (data[i][j] - input_mx) / input_mmd - 1;
 }
 
-void NN_Model::denormalize(double data[OVS]) {
+void NN_Model::denormalize(float data[OVS]) {
     // Denormalize the data from being between -1 and 1.
     for (int i = 0; i < OVS; i++)
         data[i] = (((data[i] + 1) / 2) * output_mmd[i]) + output_mx[i];
 }
 
-double* NN_Model::run_zernike_model(double input_pixels[IPS][IPS]) {
+float* NN_Model::run_zernike_model(float input_pixels[IPS][IPS]) {
     // Create a copy of the data so that the original is not mutated.
     // This function only accepts one row of data at a time (hence being 2D).
-    double data_copy[IPS][IPS];
-    std::memcpy(data_copy, input_pixels, sizeof(double) * IPS2);
+    float data_copy[IPS][IPS];
+    std::memcpy(data_copy, input_pixels, sizeof(float) * IPS2);
     // Pre-processing steps.
     subtract_base_field(data_copy); // Subtract off the base field
     normalize(data_copy);           // Normalize the data between -1 and 1
     // Call the model.
-    double* model_output = model_inference(data_copy);
+    float* model_output = model_inference(data_copy);
     // Post-processing steps.
     denormalize(model_output); // Denormalize the data
     return model_output;

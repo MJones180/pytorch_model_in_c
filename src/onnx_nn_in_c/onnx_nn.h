@@ -21,13 +21,13 @@ class NN_Model {
     std::vector<const char*> onnx_input_name = {NN_INPUT_NAME};
     std::vector<const char*> onnx_output_name = {NN_OUTPUT_NAME};
     // The base field that should be subtracted off
-    double base_field[IPS][IPS];
+    float base_field[IPS][IPS];
     // There should be a single value for all inputs.
-    double input_mmd; // Input max min diff
-    double input_mx;  // Input min x
+    float input_mmd; // Input max min diff
+    float input_mx;  // Input min x
     // Each output should have its own value
-    double output_mmd[OVS]; // Output max min diff
-    double output_mx[OVS];  // Output min x
+    float output_mmd[OVS]; // Output max min diff
+    float output_mx[OVS];  // Output min x
 
   private:
     // Functions that will be called by the constructor to get things set up
@@ -36,16 +36,16 @@ class NN_Model {
     void load_norm_data();
 
     // Pre-processing
-    void subtract_base_field(double data[IPS][IPS]);
-    void normalize(double data[IPS][IPS]);
+    void subtract_base_field(float data[IPS][IPS]);
+    void normalize(float data[IPS][IPS]);
     // Call the TorchScript model
-    double* model_inference(double data[IPS][IPS]);
+    float* model_inference(float data[IPS][IPS]);
     // Post-processing
-    void denormalize(double* data);
+    void denormalize(float* data);
 
   public:
     NN_Model(std::string model_path, int core_count);
-    double* run_zernike_model(double input_pixels[IPS][IPS]);
+    float* run_zernike_model(float input_pixels[IPS][IPS]);
     ~NN_Model(){};
 };
 

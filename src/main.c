@@ -103,16 +103,16 @@ int main(int argc, const char* argv[]) {
     char* output_row_path = concat(data_path, "python_output_line.txt");
     // Load the input values from the file (https://stackoverflow.com/a/7152018)
     FILE* text_file = fopen(input_row_path, "r");
-    double inputs[IPS][IPS];
+    float inputs[IPS][IPS];
     for (int i = 0; i < IPS; i++)
         for (int j = 0; j < IPS; j++)
-            fscanf(text_file, "%lf", &inputs[i][j]);
+            fscanf(text_file, "%f", &inputs[i][j]);
     fclose(text_file);
     // Load the output values from the file.
     text_file = fopen(output_row_path, "r");
-    double python_output[OVS];
+    float python_output[OVS];
     for (int i = 0; i < OVS; i++)
-        fscanf(text_file, "%lf", &python_output[i]);
+        fscanf(text_file, "%f", &python_output[i]);
     fclose(text_file);
 
     // =========================================================================
@@ -126,7 +126,7 @@ int main(int argc, const char* argv[]) {
         // Call the model on the example data to verify the model is working.
         // =========================================================================
         print_step("Calling the model to verify its outputs");
-        double* model_output = run_zernike_model(inputs);
+        float* model_output = run_zernike_model(inputs);
         printf("PyTorch Model Output, C ONNX Model Output\n");
         for (int i = 0; i < OVS; i++)
             printf("%.16f, %.16f\n", *(python_output + i), *(model_output + i));

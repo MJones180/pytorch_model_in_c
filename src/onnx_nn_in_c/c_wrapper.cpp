@@ -13,7 +13,7 @@ void load_model(const char* model_path, int core_count) {
     NN_Model_instance = new NN_Model(model_path, core_count);
 }
 
-double* run_zernike_model(double input_pixels[IPS][IPS]) {
+float* run_zernike_model(float input_pixels[IPS][IPS]) {
     return NN_Model_instance->run_zernike_model(input_pixels);
 }
 
