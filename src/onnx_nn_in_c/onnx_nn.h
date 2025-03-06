@@ -11,14 +11,15 @@
 #include <vector>
 
 class NN_Model {
-    std::string model_dir_path;
-    // https://github.com/microsoft/onnxruntime/issues/4131#issuecomment-682796289
-    std::unique_ptr<Ort::Session> onnx_session = nullptr;
     // The env object must be stored otherwise a Segmentation Fault will occur
-    // during model inference
+    // during model inference. Additionally, this line must come first,
+    // otherwise a segmentation fault will occur when the object is deleted.
     // https://github.com/microsoft/onnxruntime/issues/5630#issuecomment-719113770
     Ort::Env env =
         Ort::Env(OrtLoggingLevel::ORT_LOGGING_LEVEL_WARNING, "onnx_nn");
+    std::string model_dir_path;
+    // https://github.com/microsoft/onnxruntime/issues/4131#issuecomment-682796289
+    std::unique_ptr<Ort::Session> onnx_session = nullptr;
     // Variables that are needed to run the model
     Ort::MemoryInfo onnx_mem_info = Ort::MemoryInfo::CreateCpu(
         OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault);
