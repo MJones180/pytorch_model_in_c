@@ -4,12 +4,13 @@ void NN_Model::load_model(int core_count) {
     std::string file_path = model_dir_path + "/model.onnx";
     try {
         Ort::SessionOptions session_options;
+
         std::cout << "Using " << core_count << " cores\n";
         session_options.SetIntraOpNumThreads(core_count);
+
         // https://github.com/microsoft/onnxruntime/issues/4131#issuecomment-682796289
         onnx_session = std::move(std::make_unique<Ort::Session>(
-            Ort::Env(OrtLoggingLevel::ORT_LOGGING_LEVEL_WARNING, "onnx_nn"),
-            file_path.c_str(), session_options));
+            env, file_path.c_str(), session_options));
     } catch (const std::exception& e) {
         std::cerr << "error loading in the model\n";
         exit(-1);
