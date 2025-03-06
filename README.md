@@ -14,14 +14,11 @@ ONNX Runtime (and potentially OpenVINO) must be installed:
     1. Install OpenVINO Release 2024.3 using APT. A link for 2024.6 instructions can be found at ( https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/download.html?PACKAGE=OPENVINO_BASE&VERSION=v_2024_6_0&OP_SYSTEM=LINUX&DISTRIBUTION=APT ).
     2. Intel GPU library downloads. ( https://github.com/intel/compute-runtime/releases/tag/24.35.30872.22 )
     3. The `setupvars.sh` step can be ignored since using apt to install OpenVINO.
-    4. Download and unzip the ONNX Runtime (v5.4) source code (tar.gz) inside of the `libraries` folder. ( https://github.com/intel/onnxruntime/releases/tag/v5.4 )
+    4. Download and unzip the ONNX Runtime (v5.4) source code (tar.gz) to `./libraries/onnxruntime`. ( https://github.com/intel/onnxruntime/releases/tag/v5.4 )
     5. Inside of the unzipped ONNX folder, run: `./build.sh --config RelWithDebInfo --use_openvino GPU --build_shared_lib --build_wheel`
 
+After ONNX Runtime is installed, the correct ONNX Runtime statements need to be uncommented in `CMakeLists.txt`.
 *Note, the iGPU instructions work for Ubuntu 22.04 with an Intel Xeon CPU E3-1505L v6 @ 2.20GHz (Intel HD Graphics P630 GPU).*
-
-After ONNX Runtime is installed:
-- The ONNX Runtime library path, `ONNXRUNTIME_ROOTDIR`, must be set in `run_build.zsh`.
-- The correct ONNX Runtime statements need to be uncommented in `CMakeLists.txt`.
 
 Building the code for this repo expects that ZSH is being used (not Bash).
 To build, run `zsh run_build.zsh` from within the root.
