@@ -19,4 +19,4 @@ cmake -DONNXRUNTIME_ROOTDIR=${ONNXRUNTIME_ROOTDIR} ..;
 cmake --build .;
 
 # Run a test to ensure everything works
-./main ../models/exported_data_groups_approx_2_epoch285 1 VALIDATE_OUTPUTS;
+./main ../models/exported_weighted_aberration_ranges_local_v4_epoch15 1 VALIDATE_OUTPUTS;

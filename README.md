@@ -42,10 +42,7 @@ Example commands can be found in the `example_commands.txt`.
 
 ## Model
 
-The follow models are shipped with this repo for testing:
-- `exported_data_groups_approx_2_epoch285`: slowest and most accurate.
-- `exported_inference_speedup_v2_1_epoch325`: faster and a tiny bit less acurrate.
-- `exported_inference_speedup_v1_2_epoch267`: fastest and a tiny bit more less acurrate.
+The follow model is shipped with this repo for testing: `exported_weighted_aberration_ranges_local_v4_epoch15`.
 
 Any other PyTorch model can be used, it will just need to be converted using the `export_model.py` script from the `uml_picture_d` repository.
 Under the hood, this is using the `torch.onnx.export` function to convert the PyTorch model to an ONNX model.
@@ -60,13 +57,6 @@ Additionally, the model should have been trained on data that was normalized bet
 
 ## Timing
 
-Results are for 5,000 iterations of the models shipped with this repo.
-All timings were taken using a single core on an AMD Ryzen 9 7950X CPU (no GPU).
-Additionally, all times reported are in milliseconds.
-
-- `exported_data_groups_approx_2_epoch285`: 1.1
-- `exported_inference_speedup_v2_1_epoch325`: 0.65
-- `exported_inference_speedup_v1_2_epoch267`: 0.31
-
-Note: total logical cores = physical cores * threads per core.
-Note: for some reason, using the `taskset --cpu-list ...` does not seem to work on all machines for the ONNX Runtime library.
+Notes:
+- Total logical cores = physical cores * threads per core.
+- For some reason, using the `taskset --cpu-list ...` does not seem to work on all machines.
