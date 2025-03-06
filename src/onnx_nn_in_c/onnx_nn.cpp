@@ -4,10 +4,20 @@ void NN_Model::load_model(int core_count) {
     std::string file_path = model_dir_path + "/model.onnx";
     try {
         Ort::SessionOptions session_options;
-
-        std::cout << "Using " << core_count << " cores\n";
-        session_options.SetIntraOpNumThreads(core_count);
-
+        if (core_count == -1) {
+            std::cout << "Using the integrated GPU\n";
+            std::unordered_map<std::string, std::string> options;
+            options["device_type"] = "GPU";
+            options["precision"] = "FP32";
+            session_options.AppendExecutionProvider("OpenVINO", options);
+            // May potentially provide better performance for OpenVINO
+            // https://onnxruntime.ai/docs/execution-providers/OpenVINO-ExecutionProvider.html#onnxruntime-graph-level-optimization
+            session_options.SetGraphOptimizationLevel(
+                GraphOptimizationLevel::ORT_DISABLE_ALL);
+        } else {
+            std::cout << "Using " << core_count << " CPU cores\n";
+            session_options.SetIntraOpNumThreads(core_count);
+        }
         // https://github.com/microsoft/onnxruntime/issues/4131#issuecomment-682796289
         onnx_session = std::move(std::make_unique<Ort::Session>(
             env, file_path.c_str(), session_options));

@@ -32,6 +32,7 @@ The main script (`main`) can be run using the following signature:
     ./main ../models/<model> <core count> <action>;
 
 If a value of `0` is passed for the `core count`, then `ONNX Runtime` decides how many cores to use.
+If a value of `-1` is passed for the `core count`, then the integrated GPU is used.
 
 On some machines, the number of cores can be capped by adding `taskset` at the start of the command:
 
