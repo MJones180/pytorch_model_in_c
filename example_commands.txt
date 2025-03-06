@@ -6,6 +6,8 @@ Run 1,000 iterations back to back:
     ./main ../models/exported_weighted_aberration_ranges_local_v4_epoch15 1 BENCHMARK_ITER_COUNT 1000;
     # Let ONNX Runtime decide how many cores to use
     ./main ../models/exported_weighted_aberration_ranges_local_v4_epoch15 0 BENCHMARK_ITER_COUNT 1000;
+    # Integrated GPU
+    ./main ../models/exported_weighted_aberration_ranges_local_v4_epoch15 -1 BENCHMARK_ITER_COUNT 1000;
 
 Run iterations for 2 seconds with a frequency of 1 kHz.
     ./main ../models/exported_weighted_aberration_ranges_local_v4_epoch15 1 BENCHMARK_FREQ 2 1000;
