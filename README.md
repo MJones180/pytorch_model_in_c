@@ -43,7 +43,7 @@ Example commands can be found in the `example_commands.txt`.
 
 ## Model
 
-The follow model is shipped with this repo for testing: `exported_weighted_aberration_ranges_local_v4_epoch15`.
+Many models are shipped with this repo, including `exported_weighted_aberration_ranges_local_v4_epoch15`.
 
 Any other PyTorch model can be used, it will just need to be converted using the `export_model.py` script from the `uml_picture_d` repository.
 Under the hood, this is using the `torch.onnx.export` function to convert the PyTorch model to an ONNX model.
@@ -58,6 +58,10 @@ Additionally, the model should have been trained on data that was normalized bet
 
 ## Timing
 
-Notes:
 - Total logical cores = physical cores * threads per core.
 - For some reason, using the `taskset --cpu-list ...` does not seem to work on all machines.
+
+## Notes
+
+- This repo originally used TorchScript, but ONNX Runtime was switched to since it is faster and is still being actively developed.
+- Many models are shipped with this repo (primarily to make inference speed testing easier). That means, this repo is sadly bulkier than it needs to be.
