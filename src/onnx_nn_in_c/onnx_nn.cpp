@@ -84,19 +84,11 @@ float* NN_Model::model_inference(float data[IPS][IPS]) {
         onnx_mem_info, flat_float_data.data(), flat_float_data.size(),
         onnx_input_shape.data(), onnx_input_shape.size()));
     try {
-        float* model_output =
-            onnx_session
-                ->Run(Ort::RunOptions{nullptr}, onnx_input_name.data(),
-                      input_tensor.data(), onnx_input_name.size(),
-                      onnx_output_name.data(), onnx_output_name.size())[0]
-                .GetTensorMutableData<float>();
-        // We cannot allocate the array locally, instead we need to dynamically
-        // allocate the array memory. (https://stackoverflow.com/a/36784891)
-        float* output_double = new float[OVS];
-        // The values should be returned as type double, not float.
-        for (int i = 0; i < OVS; i++)
-            output_double[i] = model_output[i];
-        return output_double;
+        return onnx_session
+            ->Run(Ort::RunOptions{nullptr}, onnx_input_name.data(),
+                  input_tensor.data(), onnx_input_name.size(),
+                  onnx_output_name.data(), onnx_output_name.size())[0]
+            .GetTensorMutableData<float>();
     } catch (const Ort::Exception& exception) {
         std::cerr << "error running the model: " << exception.what() << "\n";
         exit(-1);
