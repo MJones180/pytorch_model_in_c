@@ -51,6 +51,9 @@ Under the hood, this is using the `torch.onnx.export` function to convert the Py
 For this code, it is required that the model only takes one input array and one output array.
 The names and sizes of these arrays can be found in the `constants.h` file.
 
+**Note**: The models are expected to have both input and output normalization.
+The models that have the normalization where the wavefront pixels sum to one are not yet supported.
+
 ### Normalization
 
 For the normalization data, there should be a single value for all inputs and each output should have its own value.
