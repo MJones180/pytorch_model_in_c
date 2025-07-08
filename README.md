@@ -52,7 +52,7 @@ For this code, it is required that the model only takes one input array and one 
 The names and sizes of these arrays can be found in the `constants.h` file.
 
 **Note**: The models are expected to have both input and output normalization.
-The models that have the normalization where the wavefront pixels sum to one are not yet supported.
+If the input normalization values are both 0, then the base field subtraction and input normalization are not performed.
 
 ### Normalization
 

@@ -120,9 +120,14 @@ float* NN_Model::run_zernike_model(float input_pixels[IPS][IPS]) {
     // This function only accepts one row of data at a time (hence being 2D).
     float data_copy[IPS][IPS];
     std::memcpy(data_copy, input_pixels, sizeof(float) * IPS2);
-    // Pre-processing steps.
-    subtract_base_field(data_copy); // Subtract off the base field
-    normalize(data_copy);           // Normalize the data between -1 and 1
+
+    // Only perform the input normalization if the input_mmd is not equal to 0
+    if (input_mmd != 0) {
+        // Pre-processing steps.
+        subtract_base_field(data_copy); // Subtract off the base field
+        normalize(data_copy);           // Normalize the data between -1 and 1
+    }
+
     // Call the model.
     float* model_output = model_inference(data_copy);
     // Post-processing steps.
